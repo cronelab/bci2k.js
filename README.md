@@ -1,4 +1,4 @@
-# live-bci2k
+# bci2k.js
 
 > ${DESCRIPTION}
 
