@@ -257,7 +257,7 @@ BCI2K.DataConnection.prototype = {
     },
 
     _decodeMessage: function( data ) {
-        var dv = new jDataView( data, 0, data.byteLength, true );
+        var dv = new BCI2K.DataView( data, 0, data.byteLength, true );
 
         var descriptor = dv.getUint8();
         switch( descriptor ) {
