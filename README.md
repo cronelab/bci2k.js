@@ -51,7 +51,6 @@ connection.tap( 'Source', function( dataConnection ) {
         if ( signal.length > 0 ) {
             console.log( 'Got one sample block of data with ' + signal.length + ' channels and ' + signal[0].length + ' samples.' );
         }
-        
     };
 
     dataConnection.onStateVector = function( stateVector ) {

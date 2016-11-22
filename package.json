@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/cronelab/bci2k.js/issues"
   },
-  "homepage": "https://github.com/cronelab/bci2k.js#readme"
+  "homepage": "https://github.com/cronelab/bci2k.js#readme",
+  "dependencies": {
+    "jdataview": "^2.5.0"
+  }
 }

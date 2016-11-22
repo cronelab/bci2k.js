@@ -121,19 +121,6 @@ BCI2K.Connection.prototype = {
         };
     },
 
-    // Deprecated API
-    stream: function( callback ) {
-
-        var connection = this;
-
-        this.execute( "Get Parameter WSConnectorServer", function( result ) {
-            connection.dataConnection = new BCI2K.DataConnection();
-            connection.dataConnection.onGenericSignal = callback;
-            connection.dataConnection.connect( connection.address + ':' + result.output.split( ':' )[1] );
-        } );
-
-    },
-
     // TODO Implement as a Promise
     tap: function( location, onSuccess, onFailure ) {
 
