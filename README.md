@@ -68,5 +68,5 @@ connection.tap( 'Source', function( dataConnection ) {
 
 [MIT](http://vjpr.mit-license.org)
 
-[npm-image]: https://img.shields.io/npm/v/live-xxx.svg
+[npm-image]: https://img.shields.io/npm/v/bci2k.svg
 [npm-url]: https://npmjs.org/package/bci2k
