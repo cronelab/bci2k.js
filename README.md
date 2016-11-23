@@ -30,10 +30,6 @@ connection.connect( '127.0.0.1' )
 ### Execute system commands
 
 ```js
-connection.execute( 'Get System State', function( result ) {
-    console.log( 'System state is ' + result );
-} );
-
 connection.execute( 'Get System State' )
             .then( function( state ) {
                 console.log( 'System state is ' + state );
