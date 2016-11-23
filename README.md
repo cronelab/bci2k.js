@@ -18,21 +18,27 @@ npm install --save bci2k
 var bci2k = require( 'bci2k' );
 var connection = bci2k.Connection();
 
-connection.onconnect = function( event ) {
-    console.log( 'Yay!' );  
-};
-
-connection.connect( '127.0.0.1' );
+connection.connect( '127.0.0.1' )
+            .then( function( event ) {
+                console.log( 'Yay!' );
+            } )
+            .catch( function( reason ) {
+                console.log( 'Boo.' );
+            } );
 ```
 
 ### Execute system commands
 
 ```js
-connection.execute( 'Get System State', function( result ) {
-    console.log( 'System state is ' + result );
-} );
+connection.execute( 'Get System State' )
+            .then( function( state ) {
+                console.log( 'System state is ' + state );
+            } );
 
-connection.resetSystem(); // === connection.execute( 'Reset System' );
+connection.resetSystem()
+            .then( function() {
+                console.log( 'System has been reset.' );
+            } );
 ```
 
 ### Tap data from part of the signal processing chain
@@ -41,8 +47,9 @@ connection.resetSystem(); // === connection.execute( 'Reset System' );
 var dataConnection = null;
 
 // Tap into the raw signal
-connection.tap( 'Source', function( dataConnection ) {
-    
+
+var setupSourceConnection = function( dataConnection ) {
+
     dataConnection.onSignalProperties = function( properties ) {
         console.log( 'Recording from channels: ' + properties.channels );
     };
@@ -57,8 +64,13 @@ connection.tap( 'Source', function( dataConnection ) {
         console.log( 'Current stimulus code: ' + stateVector['StimulusCode'] );
     };
 
-} );
+};
 
+connection.tap( 'Source' )
+            .then( setupSourceConnection )
+            .catch( function( reason ) {
+                console.log( 'Could not tap Source: ' + reason );
+            } );
 ```
 
 ### And more!
