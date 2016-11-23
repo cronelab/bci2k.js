@@ -22,7 +22,7 @@ connection.connect( '127.0.0.1' )
             .then( function( event ) {
                 console.log( 'Yay!' );
             } )
-            .catch( funcntion( reason ) {
+            .catch( function( reason ) {
                 console.log( 'Boo.' );
             } );
 ```
