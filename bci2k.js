@@ -154,7 +154,7 @@ BCI2K.Connection.prototype = {
         return this.execute( 'Get Parameter ' + locationParameter )
                     .then( function( location ) {
 
-                        if ( locaiton.indexOf( 'does not exist' ) >= 0 ) {
+                        if ( location.indexOf( 'does not exist' ) >= 0 ) {
                             return Promise.reject( 'Location parameter does not exist' );
                         }
 
@@ -162,7 +162,7 @@ BCI2K.Connection.prototype = {
                             return Promise.reject( 'Location parameter not set' );
                         }
 
-                        var dataConnection = BCI2K.DataConnection();
+                        var dataConnection = new BCI2K.DataConnection();
 
                         // TODO We used to "resolve" here, before doiing the 
                         // actual connecting bit, but I think it makes much
@@ -195,14 +195,16 @@ BCI2K.Connection.prototype = {
 
             return new Promise( function( resolve, reject ) {
 
-                var id = ( ++( this._execid ) ).toString();
+                var id = ( ++( connection._execid ) ).toString();
 
                 // TODO Properly handle errors from BCI2000
                 connection._exec[ id ] = {
                     onstart: onstart,
                     onoutput: onoutput,
                     ondone: function( exec ) {
-                        ondone( exec );
+                        if ( ondone ) {
+                            ondone( exec );
+                        }
                         resolve( exec.output );     // TODO Should pass whole thing?
                     },
                     output: '',
