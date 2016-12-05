@@ -5,8 +5,8 @@
   "main": "bci2k.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify bci2k.js -o dist/bci2k.js",
-    "build-min": "browserify bci2k.js | uglifyjs -c > dist/bci2k.min.js"
+    "build": "browserify bci2k.js --standalone BCI2K -o dist/bci2k.js",
+    "build-min": "browserify bci2k.js --standalone BCI2K | uglifyjs -c > dist/bci2k.min.js"
   },
   "repository": {
     "type": "git",
