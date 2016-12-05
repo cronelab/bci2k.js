@@ -4,6 +4,8 @@
 
 [![NPM Version][npm-image]][npm-url]
 
+bci2k.js relies on a binary server called BCI2000Web, which allows browsers to communicate with Operator using the Operator Scripting language and stream data in to the browser using websockets.
+
 ## Install
 
 ```bash
@@ -75,6 +77,15 @@ connection.tap( 'Source' )
 
 ### And more!
 
+## Development
+
+```bash
+npm run build
+```
+
+```bash
+npm run build-min
+```
 
 ## License
 
