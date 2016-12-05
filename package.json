@@ -4,7 +4,9 @@
   "description": "A javascript connector for BCI2000",
   "main": "bci2k.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify bci2k.js -o dist/bci2k.js",
+    "build-min": "browserify bci2k.js | uglifyjs -c > dist/bci2k.min.js"
   },
   "repository": {
     "type": "git",
@@ -19,8 +21,19 @@
   "bugs": {
     "url": "https://github.com/cronelab/bci2k.js/issues"
   },
+  "files": [
+    "dist",
+    "bci2k.js",
+    "LICENSE"
+  ],
   "homepage": "https://github.com/cronelab/bci2k.js#readme",
   "dependencies": {
-    "jdataview": "^2.5.0"
+    "jdataview": "^2.5.0",
+    "promise-polyfill": "^6.0.2",
+    "setimmediate": "^1.0.5"
+  },
+  "devDependencies": {
+    "browserify": "^13.1.1",
+    "uglifyjs": "^2.4.10"
   }
 }
