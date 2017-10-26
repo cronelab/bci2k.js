@@ -18,7 +18,7 @@ npm install --save bci2k
 
 ```js
 var bci2k = require( 'bci2k' );
-var connection = bci2k.Connection();
+var connection = new bci2k.Connection();
 
 connection.connect( '127.0.0.1' )
             .then( function( event ) {
