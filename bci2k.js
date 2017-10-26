@@ -15,6 +15,8 @@ require( 'setimmediate' );                      // Needed to fix promise
 var Promise = require( 'promise-polyfill' );    // Needed for IE Promise
                                                 // support
 
+// Needed to allow operation in Node outside of a browser
+var WebSocket = WebSocket || require( 'websocket' ).w3cwebsocket;
 
 // MODULE OBJECT
 
