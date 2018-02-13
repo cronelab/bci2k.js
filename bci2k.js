@@ -127,7 +127,7 @@ BCI2K.Connection.prototype = {
         var opcode = arr[0];
         var id = arr[1];
         var msg = arr.slice( 2 ).join(' ');
-         
+
         switch( opcode ) {
             case 'S': // START: Starting to execute command
                 if( this._exec[ id ].onstart )
@@ -149,7 +149,7 @@ BCI2K.Connection.prototype = {
 
     tap: function( location, onSuccess, onFailure ) {
 
-        var connection = this;      
+        var connection = this;
 
         var locationParameter = "WS" + location + "Server";
 
@@ -166,7 +166,7 @@ BCI2K.Connection.prototype = {
 
                         var dataConnection = new BCI2K.DataConnection();
 
-                        // TODO We used to "resolve" here, before doiing the 
+                        // TODO We used to "resolve" here, before doiing the
                         // actual connecting bit, but I think it makes much
                         // more sense to have tap "success" be actually
                         // connecting to the source, rather than just getting
@@ -175,7 +175,7 @@ BCI2K.Connection.prototype = {
                         // Use our address plus the port from the result
                         return dataConnection.connect( connection.address + ':' + location.split( ':' )[1] )
                                                 .then( function( event ) {
-                                                    // To keep with our old API, we actually want to wrap the 
+                                                    // To keep with our old API, we actually want to wrap the
                                                     // dataConnection, and not the connection event
                                                     // TODO This means we can't get the connection event!
                                                     return dataConnection;
@@ -226,7 +226,7 @@ BCI2K.Connection.prototype = {
     },
 
     getVersion: function( fn ) {
-        this.execute( "Version", function( exec ) {  
+        this.execute( "Version", function( exec ) {
             fn( exec.output.split(' ')[1] );
         } );
     },
@@ -239,6 +239,10 @@ BCI2K.Connection.prototype = {
         return this.execute( "Hide Window" );
     },
 
+    setWatch: function(state, ip, port) {
+        return this.execute( "Add watch " + state + " at " + ip + ":" + port );
+    },
+
     resetSystem: function() {
         return this.execute( "Reset System" );
     },
@@ -248,7 +252,7 @@ BCI2K.Connection.prototype = {
         return this.execute( "Set Config", fn );
     },
 
-    start: function() { 
+    start: function() {
         return this.execute( "Start" );
     },
 
@@ -308,7 +312,7 @@ BCI2K.DataConnection.prototype = {
             };
 
         } );
-        
+
     },
 
     _handleMessageEvent: function( event ) {
@@ -383,7 +387,7 @@ BCI2K.DataConnection.prototype = {
 
         // Bugfix: There seems to not always be spaces after '{' characters
         propstr = propstr.replace( /{/g, ' { ' );
-        propstr = propstr.replace( /}/g, ' } ' ); 
+        propstr = propstr.replace( /}/g, ' } ' );
 
         this.signalProperties = {};
         var prop_tokens = propstr.split( ' ' );
@@ -405,7 +409,7 @@ BCI2K.DataConnection.prototype = {
             var numChannels = parseInt( props[ pidx++ ] );
             for( var i = 0; i < numChannels; i++ )
                 this.signalProperties.channels.push( ( i + 1 ).toString() );
-        } 
+        }
 
         this.signalProperties.elements = [];
         if( props[ pidx ] == '{' ) {
@@ -417,7 +421,7 @@ BCI2K.DataConnection.prototype = {
             for( var i = 0; i < numElements; i++ )
                 this.signalProperties.elements.push( ( i + 1 ).toString() );
         }
-        
+
         // Backward Compatibility
         this.signalProperties.numelements = this.signalProperties.elements.length;
         this.signalProperties.signaltype = props[ pidx++ ];
@@ -434,13 +438,13 @@ BCI2K.DataConnection.prototype = {
         this.signalProperties.valueunits = []
         for( var i = 0; i < this.signalProperties.channels.length; i++ )
             this.signalProperties.valueunits.push(
-                this._decodePhysicalUnits( 
+                this._decodePhysicalUnits(
                     props.slice( pidx, pidx += 5 ).join( ' ' )
-                ) 
+                )
             );
 
         pidx++; // '}'
-        
+
         this.onSignalProperties( this.signalProperties );
     },
 
@@ -477,7 +481,7 @@ BCI2K.DataConnection.prototype = {
         for( var i = 0; i < vecOrder.length; i++ ) {
             var state = vecOrder[i][0]
             this.stateVecOrder.push( [ state, this.stateFormat[ state ].bitWidth ] );
-        } 
+        }
 
         this.onStateFormat( this.stateFormat );
     },
