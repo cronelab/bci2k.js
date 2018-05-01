@@ -26,7 +26,7 @@
     "jdataview": "^2.5.0",
     "promise-polyfill": "^6.0.2",
     "setimmediate": "^1.0.5",
-    "websocket": "^1.0.25"
+    "websocket": "^1.0.26"
   },
   "devDependencies": {
     "browserify": "^13.1.1",

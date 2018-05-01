@@ -3582,34 +3582,30 @@ module.exports = require('../package.json').version;
 
 },{"../package.json":12}],12:[function(require,module,exports){
 module.exports={
-  "_args": [
-    [
-      "websocket@1.0.25",
-      "D:\\GitHub\\bci2k.js"
-    ]
-  ],
-  "_from": "websocket@1.0.25",
-  "_id": "websocket@1.0.25",
+  "_from": "websocket@1.0.26",
+  "_id": "websocket@1.0.26",
   "_inBundle": false,
-  "_integrity": "sha512-M58njvi6ZxVb5k7kpnHh2BvNKuBWiwIYvsToErBzWhvBZYwlEiLcyLrG41T1jRcrY9ettqPYEqduLI7ul54CVQ==",
+  "_integrity": "sha512-fjcrYDPIQxpTnqFQ9JjxUQcdvR89MFAOjPBlF+vjOt49w/XW4fJknUoMz/mDIn2eK1AdslVojcaOxOqyZZV8rw==",
   "_location": "/websocket",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "websocket@1.0.25",
+    "raw": "websocket@1.0.26",
     "name": "websocket",
     "escapedName": "websocket",
-    "rawSpec": "1.0.25",
+    "rawSpec": "1.0.26",
     "saveSpec": null,
-    "fetchSpec": "1.0.25"
+    "fetchSpec": "1.0.26"
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.25.tgz",
-  "_spec": "1.0.25",
-  "_where": "D:\\GitHub\\bci2k.js",
+  "_resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.26.tgz",
+  "_shasum": "a03a01299849c35268c83044aa919c6374be8194",
+  "_spec": "websocket@1.0.26",
+  "_where": "D:\\Projects\\Hopkins\\GIT_bci2k.js",
   "author": {
     "name": "Brian McKelvey",
     "email": "brian@worlize.com",
@@ -3619,6 +3615,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/theturtle32/WebSocket-Node/issues"
   },
+  "bundleDependencies": false,
   "config": {
     "verbose": false
   },
@@ -3635,6 +3632,7 @@ module.exports={
     "typedarray-to-buffer": "^3.1.2",
     "yaeti": "^0.0.6"
   },
+  "deprecated": false,
   "description": "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
   "devDependencies": {
     "buffer-equal": "^1.0.0",
@@ -3676,7 +3674,7 @@ module.exports={
     "install": "(node-gyp rebuild 2> builderror.log) || (exit 0)",
     "test": "faucet test/unit"
   },
-  "version": "1.0.25"
+  "version": "1.0.26"
 }
 
 },{}]},{},[1])(1)
