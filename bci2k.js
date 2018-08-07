@@ -7,85 +7,24 @@
 
 
 // REQUIRES
-
-var jDataView = require( 'jdataview' );
-
-require( 'setimmediate' );                      // Needed to fix promise
-                                                // polyfill on non-IE
-var Promise = require( 'promise-polyfill' );    // Needed for IE Promise
-                                                // support
+import $ from 'jquery'
 
 // Needed to allow operation in Node outside of a browser
 var WebSocket = WebSocket || require( 'websocket' ).w3cwebsocket;
 
-// MODULE OBJECT
 
-var BCI2K = {};
-
-
-// MEMBERS
-
-// BCI2K.DataView
-// Provides some extra functionality on top of jDataView
-
-BCI2K.DataView = function() {
-    jDataView.apply( this, arguments ); // Call jDataView constructor
-}
-BCI2K.DataView.prototype = Object.create( jDataView.prototype );
-
-BCI2K.DataView.prototype.getNullTermString = function() {
-    var val = "";
-    while ( this._offset < this.byteLength ) {
-        var v = this.getUint8();
-        if( v == 0 ) break;
-        val += String.fromCharCode( v );
-    }
-    return val;
-}
-
-BCI2K.DataView.prototype.getLengthField = function( n ) {
-    var len = 0;
-    var extended = false;
-    switch( n ) {
-        case 1:
-            len = this.getUint8();
-            extended = len == 0xff;
-            break;
-        case 2:
-            len = this.getUint16();
-            extended = len == 0xffff;
-            break;
-        case 4:
-            len = this.getUint32();
-            extended = len == 0xffffffff;
-            break;
-        default:
-            console.error( "unsupported" );
-            break;
-    }
-
-    return extended ? parseInt( this.getNullTermString() ) : len;
-}
+export class BCI2K_Connection{
+    constructor(){
+        this.onconnect = function( event ) {};
+        this.ondisconnect = function( event ) {};
+    
+        this._socket = null;
+        this._execid = 0;
+        this._exec = {}
+    };
 
 
-// BCI2K.Connection
-// Manages a WebSocket connection to BCI2000
-
-BCI2K.Connection = function() {
-
-    this.onconnect = function( event ) {};
-    this.ondisconnect = function( event ) {};
-
-    this._socket = null;
-    this._execid = 0;
-    this._exec = {}
-}
-
-BCI2K.Connection.prototype = {
-
-    constructor: BCI2K.Connection,
-
-    connect: function( address ) {
+    connect( address ) {
 
         var connection = this;
 
@@ -119,9 +58,9 @@ BCI2K.Connection.prototype = {
 
         } );
 
-    },
+    };
 
-    _handleMessageEvent: function( event ) {
+    _handleMessageEvent( event ) {
         var arr = event.data.split( ' ' );
 
         var opcode = arr[0];
@@ -144,10 +83,12 @@ BCI2K.Connection.prototype = {
                     this._exec[ id ].ondone( this._exec[ id ] );
                 delete this._exec[ id ];
                 break;
+            default:
+                break;
         }
-    },
+    };
 
-    tap: function( location, onSuccess, onFailure ) {
+    tap( location, onSuccess, onFailure ) {
 
         var connection = this;
 
@@ -160,11 +101,11 @@ BCI2K.Connection.prototype = {
                             return Promise.reject( 'Location parameter does not exist' );
                         }
 
-                        if ( location == '' ) {
+                        if ( location === '' ) {
                             return Promise.reject( 'Location parameter not set' );
                         }
 
-                        var dataConnection = new BCI2K.DataConnection();
+                        var dataConnection = new BCI2K_DataConnection();
 
                         // TODO We used to "resolve" here, before doiing the
                         // actual connecting bit, but I think it makes much
@@ -183,13 +124,13 @@ BCI2K.Connection.prototype = {
 
                     } );
 
-    },
+    };
 
-    connected: function() {
-        return ( this._socket != null && this._socket.readyState == WebSocket.OPEN );
-    },
+    connected() {
+        return ( this._socket !== null && this._socket.readyState === WebSocket.OPEN );
+    };
 
-    execute: function( instruction, ondone, onstart, onoutput ) {
+    execute( instruction, ondone, onstart, onoutput ) {
 
         var connection = this;
 
@@ -223,49 +164,51 @@ BCI2K.Connection.prototype = {
         // Cannot execute if not connected
         return Promise.reject( 'Cannot execute instruction: not connected to BCI2000' );
 
-    },
+    };
 
-    getVersion: function( fn ) {
+    getVersion( fn ) {
         this.execute( "Version", function( exec ) {
             fn( exec.output.split(' ')[1] );
         } );
-    },
+    };
 
-    showWindow: function() {
+    showWindow() {
         return this.execute( "Show Window" );
-    },
+    };
 
-    hideWindow: function() {
+    hideWindow() {
         return this.execute( "Hide Window" );
-    },
+    };
 
-    setWatch: function(state, ip, port) {
+    setWatch(state, ip, port) {
         return this.execute( "Add watch " + state + " at " + ip + ":" + port );
-    },
+    };
 
-    resetSystem: function() {
+    resetSystem() {
         return this.execute( "Reset System" );
-    },
+    };
 
     // TODO Is argument necessary now with Promise API?
-    setConfig: function( fn ) {
+    setConfig( fn ) {
         return this.execute( "Set Config", fn );
-    },
+    };
 
-    start: function() {
+    start() {
         return this.execute( "Start" );
-    },
+    };
 
-    stop: function() {
+    stop() {
         return this.execute( "Stop" );
-    },
+    };
 
-    kill: function() {
+    kill() {
         return this.execute( "Exit" );
-    }
+    };
 }
 
-BCI2K.DataConnection = function() {
+
+export class BCI2K_DataConnection{
+    constructor(){
     this._socket = null;
 
     this.onconnect = function( event ) {};
@@ -278,13 +221,10 @@ BCI2K.DataConnection = function() {
     this.signalProperties = null;
     this.stateFormat = null;
     this.stateVecOrder = null;
-}
+    }
+    
 
-BCI2K.DataConnection.prototype = {
-
-    constructor: BCI2K.DataConnection,
-
-    connect: function( address ) {
+    connect( address ) {
 
         var connection = this;
 
@@ -313,9 +253,9 @@ BCI2K.DataConnection.prototype = {
 
         } );
 
-    },
+    };
 
-    _handleMessageEvent: function( event ) {
+    _handleMessageEvent( event ) {
 
         var connection = this;
 
@@ -325,22 +265,32 @@ BCI2K.DataConnection.prototype = {
         };
         messageInterpreter.readAsArrayBuffer( event.data );
 
-    },
+    };
 
-    connected: function() {
-        return ( this._socket != null && this._socket.readyState == WebSocket.OPEN );
-    },
+    connected() {
+        return ( this._socket != null && this._socket.readyState === WebSocket.OPEN );
+    };
 
     SignalType: {
         INT16 : 0,
         FLOAT24 : 1,
         FLOAT32 : 2,
         INT32 : 3
-    },
+    }
 
-    _decodeMessage: function( data ) {
+    _decodeMessage( data ) {
 
-        var dv = new BCI2K.DataView( data, 0, data.byteLength, true );
+        // var dv = new BCI2K_DataView( data, 0, data.byteLength, true );
+        var dv = new DataView(data,0,data.byteLength,true)
+        dv.getNullTermString = function() {
+            var val = "";
+            while ( this._offset < this.byteLength ) {
+                var v = this.getUint8();
+                if( v === 0 ) break;
+                val += String.fromCharCode( v );
+            }
+            return val;
+        };
         var descriptor = dv.getUint8();
 
         switch ( descriptor ) {
@@ -350,6 +300,7 @@ BCI2K.DataConnection.prototype = {
 
             case 4:
                 var supplement = dv.getUint8();
+
                 switch ( supplement ) {
                     case 1:
                         this._decodeGenericSignal( dv ); break;
@@ -368,9 +319,9 @@ BCI2K.DataConnection.prototype = {
 
         }
 
-    },
+    };
 
-    _decodePhysicalUnits: function( unitstr ) {
+    _decodePhysicalUnits( unitstr ) {
         var units = {};
         var unit = unitstr.split( ' ' );
         var idx = 0;
@@ -380,9 +331,9 @@ BCI2K.DataConnection.prototype = {
         units.vmin = Number( unit[ idx++ ] );
         units.vmax = Number( unit[ idx++ ] );
         return units;
-    },
+    };
 
-    _decodeSignalProperties: function( dv ) {
+    _decodeSignalProperties( dv ) {
         var propstr = dv.getNullTermString();
 
         // Bugfix: There seems to not always be spaces after '{' characters
@@ -393,7 +344,7 @@ BCI2K.DataConnection.prototype = {
         var prop_tokens = propstr.split( ' ' );
         var props = [];
         for( var i = 0; i < prop_tokens.length; i++ ) {
-            if( $.trim( prop_tokens[i] ) == "" ) continue;
+            if( $.trim( prop_tokens[i] ) === "" ) continue;
             props.push( prop_tokens[i] );
         }
 
@@ -401,24 +352,24 @@ BCI2K.DataConnection.prototype = {
         this.signalProperties.name = props[ pidx++ ];
 
         this.signalProperties.channels = [];
-        if( props[ pidx ] == '{' ) {
-            while( props[ ++pidx ] != '}' )
+        if( props[ pidx ] === '{' ) {
+            while( props[ ++pidx ] !== '}' )
                 this.signalProperties.channels.push( props[ pidx ] );
             pidx++; // }
         } else {
-            var numChannels = parseInt( props[ pidx++ ] );
-            for( var i = 0; i < numChannels; i++ )
+            let numChannels = parseInt( props[ pidx++ ] );
+            for( let i = 0; i < numChannels; i++ )
                 this.signalProperties.channels.push( ( i + 1 ).toString() );
         }
 
         this.signalProperties.elements = [];
-        if( props[ pidx ] == '{' ) {
-            while( props[ ++pidx ] != '}' )
+        if( props[ pidx ] === '{' ) {
+            while( props[ ++pidx ] !== '}' )
                 this.signalProperties.elements.push( props[ pidx ] );
             pidx++; // }
         } else {
-            var numElements = parseInt( props[ pidx++ ] );
-            for( var i = 0; i < numElements; i++ )
+            let numElements = parseInt( props[ pidx++ ] );
+            for( let i = 0; i < numElements; i++ )
                 this.signalProperties.elements.push( ( i + 1 ).toString() );
         }
 
@@ -436,7 +387,7 @@ BCI2K.DataConnection.prototype = {
         pidx++; // '{'
 
         this.signalProperties.valueunits = []
-        for( var i = 0; i < this.signalProperties.channels.length; i++ )
+        for( let i = 0; i < this.signalProperties.channels.length; i++ )
             this.signalProperties.valueunits.push(
                 this._decodePhysicalUnits(
                     props.slice( pidx, pidx += 5 ).join( ' ' )
@@ -446,17 +397,17 @@ BCI2K.DataConnection.prototype = {
         pidx++; // '}'
 
         this.onSignalProperties( this.signalProperties );
-    },
+    };
 
-    _decodeStateFormat: function( dv ) {
+    _decodeStateFormat( dv ) {
         this.stateFormat = {};
-        var formatStr = dv.getNullTermString();
+        let formatStr = dv.getNullTermString();
 
-        var lines = formatStr.split( '\n' );
-        for( var lineIdx = 0; lineIdx < lines.length; lineIdx++ ){
-            if( $.trim( lines[ lineIdx ] ).length == 0 ) continue;
-            var stateline = lines[ lineIdx ].split( ' ' );
-            var name = stateline[0];
+        let lines = formatStr.split( '\n' );
+        for( let lineIdx = 0; lineIdx < lines.length; lineIdx++ ){
+            if( $.trim( lines[ lineIdx ] ).length === 0 ) continue;
+            let stateline = lines[ lineIdx ].split( ' ' );
+            let name = stateline[0];
             this.stateFormat[ name ] = {};
             this.stateFormat[ name ].bitWidth = parseInt( stateline[1] );
             this.stateFormat[ name ].defaultValue = parseInt( stateline[2] );
@@ -464,9 +415,9 @@ BCI2K.DataConnection.prototype = {
             this.stateFormat[ name ].bitLocation = parseInt( stateline[4] );
         }
 
-        var vecOrder = []
-        for( var state in this.stateFormat ) {
-            var loc = this.stateFormat[ state ].byteLocation * 8;
+        let vecOrder = []
+        for( let state in this.stateFormat ) {
+            let loc = this.stateFormat[ state ].byteLocation * 8;
             loc += this.stateFormat[ state ].bitLocation
             vecOrder.push( [ state, loc ] );
         }
@@ -478,24 +429,24 @@ BCI2K.DataConnection.prototype = {
 
         // Create a list of ( state, bitwidth ) for decoding state vectors
         this.stateVecOrder = [];
-        for( var i = 0; i < vecOrder.length; i++ ) {
-            var state = vecOrder[i][0]
+        for( let i = 0; i < vecOrder.length; i++ ) {
+            let state = vecOrder[i][0]
             this.stateVecOrder.push( [ state, this.stateFormat[ state ].bitWidth ] );
         }
 
         this.onStateFormat( this.stateFormat );
-    },
+    };
 
-    _decodeGenericSignal: function( dv ) {
+    _decodeGenericSignal( dv ) {
 
-        var signalType = dv.getUint8();
-        var nChannels = dv.getLengthField( 2 );
-        var nElements = dv.getLengthField( 2 );
+        let signalType = dv.getUint8();
+        let nChannels = dv.getLengthField( 2 );
+        let nElements = dv.getLengthField( 2 );
 
-        var signal = [];
-        for( var ch = 0; ch < nChannels; ++ch ) {
+        let signal = [];
+        for( let ch = 0; ch < nChannels; ++ch ) {
             signal.push( [] );
-            for( var el = 0; el < nElements; ++el ) {
+            for( let el = 0; el < nElements; ++el ) {
                 switch( signalType ) {
 
                     case this.SignalType.INT16:
@@ -514,14 +465,16 @@ BCI2K.DataConnection.prototype = {
                         // TODO: Currently Unsupported
                         signal[ ch ].push( 0.0 );
                         break;
+                    default:
+                        break;
                 }
             }
         }
 
         this.onGenericSignal( signal );
-    },
+    };
 
-    _decodeStateVector: function( dv ) {
+    _decodeStateVector( dv ) {
         if( this.stateVecOrder == null ) return;
 
         // Currently, states are maximum 32 bit unsigned integers
@@ -532,7 +485,7 @@ BCI2K.DataConnection.prototype = {
         var stateVectorLength = parseInt( dv.getNullTermString() );
         var numVectors = parseInt( dv.getNullTermString() );
 
-        var vecOff = dv.tell();
+        // var vecOff = dv.tell();
 
         var states = {};
         for( var state in this.stateFormat )
@@ -542,14 +495,14 @@ BCI2K.DataConnection.prototype = {
             var vec = dv.getBytes( stateVectorLength, dv.tell(), true, false );
             var bits = [];
             for( var byteIdx = 0; byteIdx < vec.length; byteIdx++ ) {
-                bits.push( ( vec[ byteIdx ] & 0x01 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x02 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x04 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x08 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x10 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x20 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x40 ) != 0 ? 1 : 0 );
-                bits.push( ( vec[ byteIdx ] & 0x80 ) != 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x01 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x02 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x04 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x08 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x10 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x20 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x40 ) !== 0 ? 1 : 0 );
+                bits.push( ( vec[ byteIdx ] & 0x80 ) !== 0 ? 1 : 0 );
             }
 
                 for( var stateIdx = 0; stateIdx < this.stateVecOrder.length; stateIdx++ ) {
@@ -564,13 +517,5 @@ BCI2K.DataConnection.prototype = {
                 }
         }
         this.onStateVector( states );
-    },
+    };
 }
-
-
-// EXPORT MODULE
-
-module.exports = BCI2K;
-
-
-//
