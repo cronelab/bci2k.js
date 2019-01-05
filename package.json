@@ -1,12 +1,11 @@
 {
   "name": "bci2k",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "A javascript connector for BCI2000",
-  "main": "bci2k.js",
+  "main": "dist/bci2k.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify bci2k.js --standalone BCI2K -o dist/bci2k.js",
-    "build-min": "browserify bci2k.js --standalone BCI2K | uglifyjs -c > dist/bci2k.min.js"
+    "build": "cross-env NODE_ENV=production webpack",
+    "dev": "cross-env NODE_ENV=development webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -17,19 +16,22 @@
     "WebSocket"
   ],
   "author": "Griffin Milsap <griffin.milsap@gmail.com>",
+  "contributors": ["Griffin Milsap <griffin.milsap@gmail.com>", "Maxwell Collard","Christopher Coogan <c.coogan2201@gmail.com"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cronelab/bci2k.js/issues"
   },
   "homepage": "https://github.com/cronelab/bci2k.js#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "babel-loader": "^8.0.5",
+    "cross-env": "^5.2.0",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0"
+  },
   "dependencies": {
     "jdataview": "^2.5.0",
-    "promise-polyfill": "^6.0.2",
-    "setimmediate": "^1.0.5",
-    "websocket": "^1.0.26"
-  },
-  "devDependencies": {
-    "browserify": "^13.1.1",
-    "uglify-js": "^2.4.10"
+    "websocket": "^1.0.28"
   }
 }

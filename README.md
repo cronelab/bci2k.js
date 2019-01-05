@@ -17,65 +17,40 @@ npm install --save bci2k
 ### Connect to BCI2000
 
 ```js
-var bci2k = require( 'bci2k' );
-var connection = new bci2k.Connection();
+const BCI2K = require( 'bci2k' );
+const bci = new BCI2K();
 
-connection.connect( '127.0.0.1' )
-            .then( function( event ) {
-                console.log( 'Yay!' );
-            } )
-            .catch( function( reason ) {
-                console.log( 'Boo.' );
-            } );
+bci.connect("127.0.0.1")
+    .then(() => console.log("Connected"))
+    .catch(err => console.log(err)
 ```
 
 ### Execute system commands
 
 ```js
-connection.execute( 'Get System State' )
-            .then( function( state ) {
-                console.log( 'System state is ' + state );
-            } );
-
-connection.resetSystem()
-            .then( function() {
-                console.log( 'System has been reset.' );
-            } );
+    bci.showWindow();
+    bci.hideWindow();
+    bci.resetSystem();
+    bci.start();
+    bci.getVersion();
 ```
 
 ### Tap data from part of the signal processing chain
 
 ```js
-var dataConnection = null;
-
-// Tap into the raw signal
-
-var setupSourceConnection = function( dataConnection ) {
-
-    dataConnection.onSignalProperties = function( properties ) {
-        console.log( 'Recording from channels: ' + properties.channels );
-    };
-
-    dataConnection.onGenericSignal = function( signal ) {
-        if ( signal.length > 0 ) {
-            console.log( 'Got one sample block of data with ' + signal.length + ' channels and ' + signal[0].length + ' samples.' );
-        }
-    };
-
-    dataConnection.onStateVector = function( stateVector ) {
-        console.log( 'Current stimulus code: ' + stateVector['StimulusCode'] );
-    };
-
-};
-
-connection.tap( 'Source' )
-            .then( setupSourceConnection )
-            .catch( function( reason ) {
-                console.log( 'Could not tap Source: ' + reason );
-            } );
+const connectToSockets = async () => {
+    let sourceConnection = await bci.tap("Source");
+    try{
+        sourceConnection.onStateFormat = data => console.log(data);
+        sourceConnection.onSignalProperties = data => console.log(data);
+        sourceConnection.onGenericSignal = data => console.log(data);}
+    }
+    catch(err){ 
+        console.log(err);
+    }
 ```
 
-### And more!
+### See more in the examples folder
 
 ## Development
 
@@ -84,7 +59,7 @@ npm run build
 ```
 
 ```bash
-npm run build-min
+npm run dev
 ```
 
 ## License
