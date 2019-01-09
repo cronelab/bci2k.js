@@ -240,8 +240,7 @@ class BCI2K_DataConnection {
         console.error("unsupported");
         break;
     }
-
-    return extended ? parseInt(getNullTermString(dv)) : len;
+    return extended ? parseInt(this.getNullTermString(dv)) : len;
   }
 
   connect(address) {
@@ -293,15 +292,7 @@ class BCI2K_DataConnection {
   _decodeMessage(data) {
     let dv = jDataView(data, 0, data.byteLength, true);
     // var dv = new DataView(data, 0, data.byteLength, true);
-    getNullTermString = (dv) => {
-      let val = "";
-      while (dv._offset < dv.byteLength) {
-        let v = dv.getUint8();
-        if (v === 0) break;
-        val += String.fromCharCode(v);
-      }
-      return val;
-    };
+
     let descriptor = dv.getUint8();
 
     switch (descriptor) {
@@ -348,7 +339,7 @@ class BCI2K_DataConnection {
   }
 
   _decodeSignalProperties(dv) {
-    let propstr = getNullTermString(dv);
+    let propstr = this.getNullTermString(dv);
 
     // Bugfix: There seems to not always be spaces after '{' characters
     propstr = propstr.replace(/{/g, " { ");
@@ -413,7 +404,7 @@ class BCI2K_DataConnection {
 
   _decodeStateFormat(dv) {
     this.stateFormat = {};
-    let formatStr = getNullTermString(dv);
+    let formatStr = this.getNullTermString(dv);
 
     let lines = formatStr.split("\n");
     for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
@@ -492,8 +483,8 @@ class BCI2K_DataConnection {
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
 
-    let stateVectorLength = parseInt(getNullTermString(dv));
-    let numVectors = parseInt(getNullTermString(dv));
+    let stateVectorLength = parseInt(this.getNullTermString(dv));
+    let numVectors = parseInt(this.getNullTermString(dv));
 
     // var vecOff = dv.tell();
 
