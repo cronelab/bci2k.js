@@ -11,25 +11,23 @@ module.exports = {
     library: 'BCI2K',
     libraryTarget: 'umd',
     globalObject: 'this'
-    },
-    externals: {
-        'websocket': 'WebSocket'
-      },
-      node: {
-        fs: 'empty'
-      },
-    module: {
-        rules: [
-          {
-            test: /\.m?js$/,
-            exclude: /(node_modules|bower_components)/,
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: ['@babel/preset-env']
-              }
-            }
-          }
-        ]
+  },
+  externals: {
+    'websocket': 'WebSocket'
+  },
+  node: {
+    fs: 'empty'
+  },
+  module: {
+    rules: [{
+      test: /\.m?js$/,
+      exclude: /(node_modules)/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env']
+        }
       }
+    }]
+  }
 };

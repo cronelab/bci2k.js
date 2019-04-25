@@ -19,8 +19,8 @@ if (typeof window === "undefined") {
 
 class BCI2K_OperatorConnection {
   constructor() {
-    this.onconnect = function(event) {};
-    this.ondisconnect = function(event) {};
+    this.onconnect = event => {};
+    this.ondisconnect = event => {};
 
     this._socket = null;
     this._execid = 0;
@@ -99,12 +99,6 @@ class BCI2K_OperatorConnection {
       }
 
       let dataConnection = new BCI2K_DataConnection();
-
-      // TODO We used to "resolve" here, before doiing the
-      // actual connecting bit, but I think it makes much
-      // more sense to have tap "success" be actually
-      // connecting to the source, rather than just getting
-      // a sensical address
 
       // Use our address plus the port from the result
       return dataConnection
@@ -192,13 +186,14 @@ class BCI2K_DataConnection {
   constructor() {
     this._socket = null;
 
-    this.onconnect = function(event) {};
-    this.onGenericSignal = function(data) {};
-    this.onStateVector = function(data) {};
-    this.onSignalProperties = function(data) {};
-    this.onStateFormat = function(data) {};
-    this.ondisconnect = function(event) {};
-
+    this.onconnect = event => {};
+    this.onGenericSignal = data => {};
+    this.onStateVector = data => {};
+    this.onSignalProperties = data => {};
+    this.onStateFormat = data => {};
+    this.ondisconnect = event => {};
+    this.states = {};
+    this.signal = null;
     this.signalProperties = null;
     this.stateFormat = null;
     this.stateVecOrder = null;
@@ -249,7 +244,7 @@ class BCI2K_DataConnection {
     return new Promise((resolve, reject) => {
       connection._socket = new websocket("ws://" + address);
 
-      connection._socket.onerror = function(event) {
+      connection._socket.onerror = function (event) {
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
@@ -273,15 +268,15 @@ class BCI2K_DataConnection {
   _handleMessageEvent(event) {
     let connection = this;
 
-      //This is stupid. Node uses buffers and browsers use blobs.
+    //This is stupid. Node uses buffers and browsers use blobs.
     if (typeof window === "undefined") {
-        connection._decodeMessage(event.data);
+      connection._decodeMessage(event.data);
     } else {
-      let messageInterpreter = new FileReader() 
+      let messageInterpreter = new FileReader()
       messageInterpreter.onload = e => {
         connection._decodeMessage(e.target.result);
       };
-      messageInterpreter.readAsArrayBuffer(event.data); 
+      messageInterpreter.readAsArrayBuffer(event.data);
     }
   }
 
@@ -426,9 +421,7 @@ class BCI2K_DataConnection {
     }
 
     // Sort by bit location
-    vecOrder.sort(function(a, b) {
-      return a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0;
-    });
+    vecOrder.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
 
     // Create a list of ( state, bitwidth ) for decoding state vectors
     this.stateVecOrder = [];
@@ -471,7 +464,7 @@ class BCI2K_DataConnection {
         }
       }
     }
-
+    this.signal = signal;
     this.onGenericSignal(signal);
   }
 
@@ -485,8 +478,6 @@ class BCI2K_DataConnection {
 
     let stateVectorLength = parseInt(this.getNullTermString(dv));
     let numVectors = parseInt(this.getNullTermString(dv));
-
-    // var vecOff = dv.tell();
 
     let states = {};
     for (let state in this.stateFormat)
@@ -521,6 +512,7 @@ class BCI2K_DataConnection {
       }
     }
     this.onStateVector(states);
+    this.states = states;
   }
 }
 

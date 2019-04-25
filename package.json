@@ -1,6 +1,6 @@
 {
   "name": "bci2k",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A javascript connector for BCI2000",
   "main": "dist/bci2k.js",
   "scripts": {
@@ -12,26 +12,30 @@
     "url": "git+https://github.com/cronelab/bci2k.js.git"
   },
   "keywords": [
-    "BCI2000",
-    "WebSocket"
+    "BCI2000"
   ],
   "author": "Griffin Milsap <griffin.milsap@gmail.com>",
-  "contributors": ["Griffin Milsap <griffin.milsap@gmail.com>", "Maxwell Collard","Christopher Coogan <c.coogan2201@gmail.com"],
+  "contributors": [
+    "Griffin Milsap <griffin.milsap@gmail.com>",
+    "Christopher Coogan <c.coogan2201@gmail.com",
+    "Maxwell Collard"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cronelab/bci2k.js/issues"
   },
   "homepage": "https://github.com/cronelab/bci2k.js#readme",
   "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
     "babel-loader": "^8.0.5",
     "cross-env": "^5.2.0",
-    "webpack": "^4.28.3",
-    "webpack-cli": "^3.2.0"
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.1"
   },
   "dependencies": {
     "jdataview": "^2.5.0",
+    "mathjs": "^5.9.0",
     "websocket": "^1.0.28"
   }
 }
