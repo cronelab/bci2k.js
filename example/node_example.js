@@ -1,6 +1,10 @@
 const BCI2K = require("../dist/bci2k");
 
-let bci = new BCI2K();
+let bci = new BCI2K.bciOperator();
+
+//Connect directly to the WSIO filter, bypassing the Operator layer
+// let bciDataConnection = new BCI2K.bciData();
+// bciDataConnection.connect("127.0.0.1:20205")
 
 bci.connect("127.0.0.1").then(() => {
   //Acts on the BCI2K_OperatorConnection

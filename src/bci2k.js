@@ -516,4 +516,7 @@ class BCI2K_DataConnection {
   }
 }
 
-module.exports = BCI2K_OperatorConnection;
+module.exports = {
+  bciOperator: BCI2K_OperatorConnection, 
+  bciData: BCI2K_DataConnection
+};
