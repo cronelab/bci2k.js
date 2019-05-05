@@ -315,6 +315,7 @@ class BCI2K_DataConnection {
             console.error("Unsupported Supplement: " + supplement.toString());
             break;
         }
+        this.onReceiveBlock();
         break;
 
       case 5:
@@ -325,7 +326,6 @@ class BCI2K_DataConnection {
         console.error("Unsupported Descriptor: " + descriptor.toString());
         break;
     }
-    this.onReceiveBlock();
   }
 
   _decodePhysicalUnits(unitstr) {
