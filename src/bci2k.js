@@ -51,6 +51,7 @@ class BCI2K_OperatorConnection {
       };
 
       connection._socket.onclose = event => {
+        // console.log("TEST")
         connection.ondisconnect(event);
       };
 
@@ -192,6 +193,8 @@ class BCI2K_DataConnection {
     this.onSignalProperties = data => {};
     this.onStateFormat = data => {};
     this.ondisconnect = event => {};
+    this.onReceiveBlock = () => {};
+
     this.states = {};
     this.signal = null;
     this.signalProperties = null;
@@ -256,6 +259,9 @@ class BCI2K_DataConnection {
       };
 
       connection._socket.onclose = event => {
+        // setTimeout(() => {
+        //   this.connect(connection._socket.url.split('//')[1])
+        // }, 1000);
         connection.ondisconnect(event);
       };
 
@@ -319,6 +325,7 @@ class BCI2K_DataConnection {
         console.error("Unsupported Descriptor: " + descriptor.toString());
         break;
     }
+    this.onReceiveBlock();
   }
 
   _decodePhysicalUnits(unitstr) {
