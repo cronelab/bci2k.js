@@ -18,7 +18,7 @@ npm install --save bci2k
 
 ```js
 const BCI2K = require( 'bci2k' );
-const bci = new BCI2K();
+const bci = new BCI2K.bciOperator();
 
 bci.connect("127.0.0.1")
     .then(() => console.log("Connected"))
@@ -33,6 +33,7 @@ bci.connect("127.0.0.1")
     bci.resetSystem();
     bci.start();
     bci.getVersion();
+    bci.execute('args') //args are any BCI2000 Operator commands
 ```
 
 ### Tap data from part of the signal processing chain
@@ -48,6 +49,12 @@ const connectToSockets = async () => {
     catch(err){ 
         console.log(err);
     }
+
+    //or
+
+    let bciDataConnection = new BCI2K.bciData();
+    bciDataConnection.connect("127.0.0.1:12345")
+    let signal = bciDataConnection.signal;
 ```
 
 ### See more in the examples folder
