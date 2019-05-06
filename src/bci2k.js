@@ -21,6 +21,7 @@ class BCI2K_OperatorConnection {
   constructor() {
     this.onconnect = event => {};
     this.ondisconnect = event => {};
+    this.onStateChange = event => {};
 
     this._socket = null;
     this._execid = 0;
@@ -47,11 +48,11 @@ class BCI2K_OperatorConnection {
 
       connection._socket.onopen = event => {
         connection.onconnect(event);
+        connection.execute("GET SYSTEM STATE").then(state => connection.onStateChange(state))
         resolve(event);
       };
 
       connection._socket.onclose = event => {
-        // console.log("TEST")
         connection.ondisconnect(event);
       };
 
@@ -80,6 +81,9 @@ class BCI2K_OperatorConnection {
         this._exec[id].exitcode = parseInt(msg);
         if (this._exec[id].ondone) this._exec[id].ondone(this._exec[id]);
         delete this._exec[id];
+        break;
+      case "X":
+        this.onStateChange(msg)
         break;
       default:
         break;
@@ -273,7 +277,6 @@ class BCI2K_DataConnection {
 
   _handleMessageEvent(event) {
     let connection = this;
-
     //This is stupid. Node uses buffers and browsers use blobs.
     if (typeof window === "undefined") {
       connection._decodeMessage(event.data);
@@ -281,6 +284,7 @@ class BCI2K_DataConnection {
       let messageInterpreter = new FileReader()
       messageInterpreter.onload = e => {
         connection._decodeMessage(e.target.result);
+
       };
       messageInterpreter.readAsArrayBuffer(event.data);
     }
@@ -315,7 +319,8 @@ class BCI2K_DataConnection {
             console.error("Unsupported Supplement: " + supplement.toString());
             break;
         }
-        this.onReceiveBlock();
+    this.onReceiveBlock();
+
         break;
 
       case 5:
