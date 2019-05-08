@@ -4,7 +4,7 @@ currStim =0
 
 async def talk2BCI2K():
     global currStim
-    async with websockets.connect('ws://localhost:80') as websocket:
+    async with websockets.connect('wss://localhost:80') as websocket:
         await websocket.send(f"E 1 Get State StimulusCode")
         await websocket.recv()
         selectedTargetState = await websocket.recv()

@@ -6,7 +6,7 @@ let bci = new BCI2K.bciOperator();
 // let bciDataConnection = new BCI2K.bciData();
 // bciDataConnection.connect("127.0.0.1:20205")
 
-bci.connect("127.0.0.1").then(() => {
+bci.connect("wss://127.0.0.1").then(() => {
   //Acts on the BCI2K_OperatorConnection
   const connectToSockets = async () => {
     //Taps the ws connection to the WSSourceServer (defaults on port 20100)

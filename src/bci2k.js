@@ -38,7 +38,7 @@ class BCI2K_OperatorConnection {
 
       connection.address = address;
 
-      connection._socket = new websocket("ws://" + connection.address);
+      connection._socket = new websocket(connection.address);
 
       connection._socket.onerror = error => {
         // This will only execute if we err before connecting, since
