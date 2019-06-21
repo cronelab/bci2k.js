@@ -9,7 +9,7 @@
 var jDataView = require("jdataview");
 
 //Node vs Browser environments
-let websocket = WebSocket;
+let websocket = require("websocket").w3cwebsocket;
 
 class BCI2K_OperatorConnection {
   constructor() {
