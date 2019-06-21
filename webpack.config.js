@@ -11,7 +11,10 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
-    publicPath: path.resolve(__dirname, "dist")
+    publicPath: path.resolve(__dirname, "dist"),
+    library: "BCI2K",
+    libraryTarget: "umd",
+    globalObject: "this"
   },
 
   // output: {
