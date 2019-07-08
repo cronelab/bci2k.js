@@ -247,7 +247,7 @@ class BCI2K_DataConnection {
     let connection = this;
 
     return new Promise((resolve, reject) => {
-      connection._socket = new websocket("ws://" + address);
+      connection._socket = new websocket(address);
 
       connection._socket.onerror = function(event) {
         // This will only execute if we err before connecting, since

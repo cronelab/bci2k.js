@@ -1,6 +1,6 @@
 {
   "name": "bci2k",
-  "version": "2.0.7",
+  "version": "2.0.9",
   "description": "A javascript connector for BCI2000",
   "main": "dist/bci2k.js",
   "scripts": {
