@@ -292,10 +292,8 @@ class BCI2K_DataConnection {
 
   _decodeMessage(data) {
     let dv = jDataView(data, 0, data.byteLength, true);
-    // var dv = new DataView(data, 0, data.byteLength, true);
 
     let descriptor = dv.getUint8();
-
     switch (descriptor) {
       case 3:
         this._decodeStateFormat(dv);
