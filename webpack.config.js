@@ -1,10 +1,8 @@
 const path = require("path");
 
-const devMode = process.env.NODE_ENV !== "production";
-
 module.exports = {
   entry: {
-    bci2k: "bci2k.js"
+    index: "./bci2k.js"
   },
   output: {
     path: path.resolve(__dirname, "dist"),
