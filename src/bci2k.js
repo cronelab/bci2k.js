@@ -5,8 +5,7 @@
 //
 // ======================================================================== //
 
-// REQUIRES
-var jDataView = require("jdataview");
+let jDataView = require("jdataview");
 
 //Node vs Browser environments
 let websocket = WebSocket;
