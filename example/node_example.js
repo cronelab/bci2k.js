@@ -1,4 +1,4 @@
-const BCI2K = require("../dist/bci2k");
+const BCI2K = require("../dist");
 
 let bci = new BCI2K.bciOperator();
 
@@ -11,21 +11,22 @@ bci.connect("ws://127.0.0.1").then(() => {
   //Acts on the BCI2K_OperatorConnection
   const connectToSockets = async () => {
     //Taps the ws connection to the WSSourceServer (defaults on port 20100)
-    let sourceConnection = await bci.tap("Source");
-    try {
-      // sourceConnection.onStateFormat = data => console.log(data);
-      sourceConnection.onSignalProperties = data => console.log(data);
-      // sourceConnection.onGenericSignal = data => console.log(data);
-      // sourceConnection.onStateVector = data => console.log(data);
-    } catch (err) {
-      console.log(err);
-    }
+    // let sourceConnection = await bci.tap("Source");
+    // try {
+    //   // sourceConnection.onStateFormat = data => console.log(data);
+    //   sourceConnection.onSignalProperties = data => console.log(data);
+    //   // sourceConnection.onGenericSignal = data => console.log(data);
+    //   // sourceConnection.onStateVector = data => console.log(data);
+    // } catch (err) {
+    //   console.log(err);
+    // }
 
     //Taps the ws connection to the WSSpectralOutputServer (defaults on port 20203)
     let spectralConnection = await bci.tap("SpectralOutput");
     try {
       // spectralConnection.onGenericSignal = data => console.log(data);
-      spectralConnection.onSignalProperties = data => console.log(data);
+      // spectralConnection.onSignalProperties = data => console.log(data);
+      spectralConnection.onGenericSignal = data => console.log(data);
     } catch (err) {
       console.log(err);
     }

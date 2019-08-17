@@ -9,7 +9,7 @@ bci2k.js relies on a binary server called BCI2000Web, which allows browsers to c
 ## Install
 
 ```bash
-npm install --save bci2k
+npm install --save @cronelab/bci2k
 ```
 
 ## Usage
@@ -28,12 +28,12 @@ bci.connect("127.0.0.1")
 ### Execute system commands
 
 ```js
-    bci.showWindow();
-    bci.hideWindow();
-    bci.resetSystem();
-    bci.start();
-    bci.getVersion();
-    bci.execute('args') //args are any BCI2000 Operator commands
+bci.showWindow();
+bci.hideWindow();
+bci.resetSystem();
+bci.start();
+bci.getVersion();
+bci.execute("args"); //args are any BCI2000 Operator commands
 ```
 
 ### Tap data from part of the signal processing chain
@@ -46,7 +46,7 @@ const connectToSockets = async () => {
         sourceConnection.onSignalProperties = data => console.log(data);
         sourceConnection.onGenericSignal = data => console.log(data);}
     }
-    catch(err){ 
+    catch(err){
         console.log(err);
     }
 
