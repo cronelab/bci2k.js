@@ -6,8 +6,6 @@
 // ======================================================================== //
 
 let jDataView = require("jdataview");
-
-//Node vs Browser environments
 let websocket = require("websocket").w3cwebsocket;
 
 class BCI2K_OperatorConnection {
@@ -19,6 +17,7 @@ class BCI2K_OperatorConnection {
     this._socket = null;
     this._execid = 0;
     this._exec = {};
+    this.state = '';
   }
 
   connect(address) {
@@ -41,9 +40,7 @@ class BCI2K_OperatorConnection {
 
       connection._socket.onopen = event => {
         connection.onconnect(event);
-        connection
-          .execute("GET SYSTEM STATE")
-          .then(state => connection.onStateChange(state));
+
         resolve(event);
       };
 
@@ -182,6 +179,20 @@ class BCI2K_OperatorConnection {
   kill() {
     return this.execute("Exit");
   }
+
+  stateListen() {
+    setInterval(() => {
+      this.execute("GET SYSTEM STATE")
+        .then(state => {
+          if (state.trim() != this.state) {
+            this.onStateChange(state.trim());
+            this.state = state.trim();
+          }
+        });
+    }, 500)
+
+  }
+
 }
 
 class BCI2K_DataConnection {
@@ -248,7 +259,7 @@ class BCI2K_DataConnection {
     return new Promise((resolve, reject) => {
       connection._socket = new websocket(address);
 
-      connection._socket.onerror = function(event) {
+      connection._socket.onerror = function (event) {
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
