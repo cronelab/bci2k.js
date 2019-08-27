@@ -193,6 +193,15 @@ class BCI2K_OperatorConnection {
 
   }
 
+
+  async getSubjectName() {
+    return await this.execute('Get Parameter SubjectName');
+  };
+
+  async getTaskName() {
+    return await this.execute('Get Parameter DataFile');
+  };
+
 }
 
 class BCI2K_DataConnection {
