@@ -216,6 +216,8 @@ class BCI2K_DataConnection {
     this.ondisconnect = event => {};
     this.onReceiveBlock = () => {};
 
+    this.callingFrom = ''
+
     this.states = {};
     this.signal = null;
     this.signalProperties = null;
@@ -262,9 +264,9 @@ class BCI2K_DataConnection {
     return extended ? parseInt(this.getNullTermString(dv)) : len;
   }
 
-  connect(address) {
+  connect(address, callingFrom) {
     let connection = this;
-
+    this.callingFrom = callingFrom;
     return new Promise((resolve, reject) => {
       connection._socket = new websocket(address);
 
@@ -294,15 +296,14 @@ class BCI2K_DataConnection {
 
   _handleMessageEvent(event) {
     let connection = this;
-    //This is stupid. Node uses buffers and browsers use blobs.
-    if (typeof window === "undefined") {
-      connection._decodeMessage(event.data);
-    } else {
+    if (typeof window !== 'undefined' || this.callingFrom == 'worker') {
       let messageInterpreter = new FileReader();
       messageInterpreter.onload = e => {
         connection._decodeMessage(e.target.result);
       };
       messageInterpreter.readAsArrayBuffer(event.data);
+    } else {
+      connection._decodeMessage(event.data);
     }
   }
 

@@ -1,4 +1,5 @@
 const path = require("path");
+const devMode = process.env.NODE_ENV !== "production";
 
 module.exports = {
   entry: {
@@ -12,6 +13,9 @@ module.exports = {
     libraryTarget: "umd",
     globalObject: "this"
   },
+  mode: devMode ? "development" : "production",
+  devtool: devMode ? "inline-source-map" : "source-map",
+
   externals: {
     websocket: "WebSocket"
   },
