@@ -15,13 +15,7 @@ module.exports = {
   },
   mode: devMode ? "development" : "production",
   devtool: devMode ? "inline-source-map" : "source-map",
-
-  externals: {
-    websocket: "WebSocket"
-  },
-  node: {
-    fs: "empty"
-  },
+  externals: ['websocket'],
   module: {
     rules: [{
       test: /\.js$/,
