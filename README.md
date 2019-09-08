@@ -2,7 +2,10 @@
 
 > A javascript connector for BCI2000
 
-[![NPM Version][npm-image]][npm-url]
+![badge](https://img.shields.io/github/package-json/v/cronelab/bci2k.js)
+![badge](https://action-badges.now.sh/cronelab/bci2k.js)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
+
 
 bci2k.js relies on a binary server called BCI2000Web, which allows browsers to communicate with Operator using the Operator Scripting language and stream data in to the browser using websockets.
 
