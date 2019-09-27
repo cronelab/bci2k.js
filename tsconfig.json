@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist",
+        "target": "es5",
+        "sourceMap": true,
+        // "noImplicitAny": true,
+        "types": ["node","websocket"]
+    },
+    "include": [
+        "./bci2k.ts"
+    ],
+}

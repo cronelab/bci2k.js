@@ -9,13 +9,23 @@
 // https://www.bci2000.org/mediawiki/index.php/Technical_Reference:BCI2000_Messages
 
 
-let websocket = require("websocket").w3cwebsocket;
+const websocket = require("websocket").w3cwebsocket;
+// import * as _websocket from "websocket";
+// let websocket = _websocket.w3cwebsocket
 
 class BCI2K_OperatorConnection {
+  _socket: WebSocket;
+  _execid: any;
+  _exec: any;
+  state: any;
+  onconnect: any;
+  ondisconnect: any;
+  onStateChange: any;
+  address: string;
   constructor() {
-    this.onconnect = event => {};
-    this.ondisconnect = event => {};
-    this.onStateChange = event => {};
+    this.onconnect = () => {};
+    this.ondisconnect = () => {};
+    this.onStateChange = (event: string) => {};
 
     this._socket = null;
     this._execid = 0;
@@ -23,7 +33,7 @@ class BCI2K_OperatorConnection {
     this.state = '';
   }
 
-  connect(address) {
+  connect(address: string) {
     let connection = this;
 
     return new Promise((resolve, reject) => {
@@ -41,24 +51,24 @@ class BCI2K_OperatorConnection {
         reject("Error connecting to BCI2000 at " + connection.address);
       };
 
-      connection._socket.onopen = event => {
-        connection.onconnect(event);
+      connection._socket.onopen = () => {
+        connection.onconnect();
 
-        resolve(event);
+        resolve();
       };
 
-      connection._socket.onclose = event => {
-        connection.ondisconnect(event);
+      connection._socket.onclose = () => {
+        connection.ondisconnect();
       };
 
       connection._socket.onmessage = event => {
-        connection._handleMessageEvent(event);
+        connection._handleMessageEvent(event.data);
       };
     });
   }
 
-  _handleMessageEvent(event) {
-    let arr = event.data.split(" ");
+  _handleMessageEvent(event:string) {
+    let arr = event.split(" ");
 
     let opcode = arr[0];
     let id = arr[1];
@@ -85,12 +95,12 @@ class BCI2K_OperatorConnection {
     }
   }
 
-  tap(location, onSuccess, onFailure) {
+  tap(location: string){//}, onSuccess, onFailure) {
     let connection = this;
 
     let locationParameter = "WS" + location + "Server";
 
-    return this.execute("Get Parameter " + locationParameter).then(location => {
+    return this.execute("Get Parameter " + locationParameter).then((location: string) => {
       if (location.indexOf("does not exist") >= 0) {
         return Promise.reject("Location parameter does not exist");
       }
@@ -102,7 +112,7 @@ class BCI2K_OperatorConnection {
 
       // Use our address plus the port from the result
       return dataConnection
-        .connect(connection.address + ":" + location.split(":")[1])
+        .connect(connection.address + ":" + location.split(":")[1],'')
         .then(event => {
           // To keep with our old API, we actually want to wrap the
           // dataConnection, and not the connection event
@@ -116,7 +126,7 @@ class BCI2K_OperatorConnection {
     return this._socket !== null && this._socket.readyState === websocket.OPEN;
   }
 
-  execute(instruction, ondone, onstart, onoutput) {
+  execute(instruction: string){//}, ondone, onstart, onoutput) {
     let connection = this;
 
     if (this.connected()) {
@@ -125,12 +135,12 @@ class BCI2K_OperatorConnection {
 
         // TODO Properly handle errors from BCI2000
         connection._exec[id] = {
-          onstart: onstart,
-          onoutput: onoutput,
-          ondone: exec => {
-            if (ondone) {
-              ondone(exec);
-            }
+          // onstart: onstart,
+          // onoutput: onoutput,
+          ondone: (exec) => {
+            // if (ondone) {
+              // ondone(exec);
+            // }
             resolve(exec.output); // TODO Should pass whole thing?
           },
           output: "",
@@ -148,7 +158,7 @@ class BCI2K_OperatorConnection {
   }
 
   getVersion() {
-    this.execute("Version").then(x => console.log(x.split(" ")[1]));
+    this.execute("Version").then((x: string) => console.log(x.split(" ")[1]));
   }
 
   showWindow() {
@@ -159,7 +169,7 @@ class BCI2K_OperatorConnection {
     return this.execute("Hide Window");
   }
 
-  setWatch(state, ip, port) {
+  setWatch(state: string, ip: string, port: string) {
     return this.execute("Add watch " + state + " at " + ip + ":" + port);
   }
 
@@ -186,7 +196,7 @@ class BCI2K_OperatorConnection {
   stateListen() {
     setInterval(() => {
       this.execute("GET SYSTEM STATE")
-        .then(state => {
+        .then((state: string) => {
           if (state.trim() != this.state) {
             this.onStateChange(state.trim());
             this.state = state.trim();
@@ -208,6 +218,22 @@ class BCI2K_OperatorConnection {
 }
 
 class BCI2K_DataConnection {
+  _socket: any;
+  states: any;
+  signal: any;
+  signalProperties: any;
+  stateFormat: any;
+  stateVecOrder: any;
+  SignalType: any;
+  callingFrom: any;
+  onconnect: any;
+  onGenericSignal: any;
+  onStateVector: any;
+  onSignalProperties: any;
+  onStateFormat: any;
+  ondisconnect: any;
+  onReceiveBlock: any;
+  address: any;
   constructor() {
     this._socket = null;
 
@@ -247,37 +273,38 @@ class BCI2K_DataConnection {
     return val;
   }
 
-  connect(address, callingFrom) {
+  connect(address: string, callingFrom: string) {
     let connection = this;
     this.callingFrom = callingFrom;
     return new Promise((resolve, reject) => {
       connection._socket = new websocket(address);
 
-      connection._socket.onerror = function (event) {
+      connection._socket.onerror = () =>  {
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
       };
 
-      connection._socket.onopen = event => {
-        connection.onconnect(event);
-        resolve(event);
+      connection._socket.onopen = () => {
+        connection.onconnect();
+        resolve();
       };
 
-      connection._socket.onclose = event => {
+      connection._socket.onclose = () => {
         // setTimeout(() => {
         //   this.connect(connection._socket.url.split('//')[1])
         // }, 1000);
-        connection.ondisconnect(event);
+        connection.ondisconnect();
       };
 
-      connection._socket.onmessage = event => {
+      connection._socket.onmessage = (event) => {
         connection._handleMessageEvent(event);
       };
     });
   }
 
   _handleMessageEvent(event) {
+    console.log(event);
     let connection = this;
     if (typeof window !== 'undefined' || this.callingFrom == 'worker') {
       let messageInterpreter = new FileReader();
@@ -332,8 +359,9 @@ class BCI2K_DataConnection {
     }
   }
 
-  _decodePhysicalUnits(unitstr) {
-    let units = {};
+  _decodePhysicalUnits(unitstr: string) {
+let units: any;
+units = {};
     let unit = unitstr.split(" ");
     let idx = 0;
     units.offset = Number(unit[idx++]);
@@ -344,7 +372,7 @@ class BCI2K_DataConnection {
     return units;
   }
 
-  _decodeSignalProperties(data) {
+  _decodeSignalProperties(data: DataView) {
     let propstr = this.getNullTermString(data);
     // Bugfix: There seems to not always be spaces after '{' characters
     propstr = propstr.replace(/{/g, " { ");
@@ -407,7 +435,7 @@ class BCI2K_DataConnection {
     this.onSignalProperties(this.signalProperties);
   }
 
-  _decodeStateFormat(data) {
+  _decodeStateFormat(data: DataView) {
     this.stateFormat = {};
     let formatStr = this.getNullTermString(data);
 
@@ -443,7 +471,7 @@ class BCI2K_DataConnection {
     this.onStateFormat(this.stateFormat);
   }
 
-  _decodeGenericSignal(data) {
+  _decodeGenericSignal(data: DataView) {
     let index = 0;
     let signalType = data.getUint8(index);
     index = index+1;
@@ -483,7 +511,7 @@ class BCI2K_DataConnection {
   }
   
 
-  _decodeStateVector(dv) {
+  _decodeStateVector(dv: DataView) {
     if (this.stateVecOrder == null) return;
 
     // Currently, states are maximum 32 bit unsigned integers

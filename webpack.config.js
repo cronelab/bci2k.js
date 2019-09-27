@@ -3,7 +3,7 @@ const devMode = process.env.NODE_ENV !== "production";
 
 module.exports = {
   entry: {
-    index: "./bci2k.js"
+    index: "./bci2k.ts"
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -16,8 +16,14 @@ module.exports = {
   mode: devMode ? "development" : "production",
   devtool: devMode ? "inline-source-map" : "source-map",
   externals: ['websocket'],
+  resolve: {
+    extensions: [".ts", ".js"]
+  },
   module: {
     rules: [{
+      test: /\.ts$/,
+      loader: "ts-loader"
+    },{
       test: /\.js$/,
       exclude: /(node_modules)/,
       use: {
