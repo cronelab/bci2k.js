@@ -5,6 +5,10 @@
 //
 // ======================================================================== //
 
+//To see how the BCI2000 messages are implemented in BCI2000 see here:
+// https://www.bci2000.org/mediawiki/index.php/Technical_Reference:BCI2000_Messages
+
+
 let websocket = require("websocket").w3cwebsocket;
 
 class BCI2K_OperatorConnection {
@@ -440,10 +444,14 @@ class BCI2K_DataConnection {
   }
 
   _decodeGenericSignal(data) {
-    let signalType = data.getUint8(0);
-    let nChannels = data.getUint16(1,true)
-    let nElements = data.getUint16(1+signalType,true)
-    let signalData = new DataView(data.buffer,7)
+    let index = 0;
+    let signalType = data.getUint8(index);
+    index = index+1;
+    let nChannels = data.getUint16(index,true)
+    index = index+signalType
+    let nElements = data.getUint16(index,true)
+    index = data.byteOffset+index+signalType;
+    let signalData = new DataView(data.buffer,index)
     let signal = [];
     for (let ch = 0; ch < nChannels; ++ch) {
       signal.push([]);
@@ -482,11 +490,14 @@ class BCI2K_DataConnection {
     // BitLocation 0 refers to the least significant bit of a byte in the packet
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
-    let _stateVectorLength = new DataView(dv.buffer,1,2)
+    let index = 1;
+    let _stateVectorLength = new DataView(dv.buffer,index,2)
+    index = index+3;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
-    let _numVectors = new DataView(dv.buffer,4,2)
+    let _numVectors = new DataView(dv.buffer,index,2)
+    index = index+3;
     let numVectors = parseInt(this.getNullTermString(_numVectors));
-    let data = new DataView(dv.buffer,7);
+    let data = new DataView(dv.buffer,index);
     let states = {};
     for (let state in this.stateFormat)
       states[state] = Array(numVectors).fill(
