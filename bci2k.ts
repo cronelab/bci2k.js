@@ -278,6 +278,7 @@ class BCI2K_DataConnection {
     this.callingFrom = callingFrom;
     return new Promise((resolve, reject) => {
       connection._socket = new websocket(address);
+      connection._socket.binaryType = 'arraybuffer';
 
       connection._socket.onerror = () =>  {
         // This will only execute if we err before connecting, since
@@ -298,31 +299,17 @@ class BCI2K_DataConnection {
       };
 
       connection._socket.onmessage = (event) => {
-        connection._handleMessageEvent(event);
+        connection._decodeMessage(event.data);
       };
     });
   }
 
-  _handleMessageEvent(event) {
-    console.log(event);
-    let connection = this;
-    if (typeof window !== 'undefined' || this.callingFrom == 'worker') {
-      let messageInterpreter = new FileReader();
-      messageInterpreter.onload = e => {
-        connection._decodeMessage(e.target.result);
-      };
-      messageInterpreter.readAsArrayBuffer(event.data);
-    } else {
-      connection._decodeMessage(event.data);
-    }
-  }
 
   connected() {
     return this._socket != null && this._socket.readyState === websocket.OPEN;
   }
 
-  _decodeMessage(data) {
-    let descriptor = new DataView(data,0,1).getUint8(0);
+  _decodeMessage(data: ArrayBuffer) {
     switch (descriptor) {
       case 3:
       let stateFormatView = new DataView(data,1,data.byteLength-1);
