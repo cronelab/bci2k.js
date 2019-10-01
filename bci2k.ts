@@ -10,92 +10,66 @@
 
 
 const websocket = require("websocket").w3cwebsocket;
-// import * as _websocket from "websocket";
-// let websocket = _websocket.w3cwebsocket
 
 class BCI2K_OperatorConnection {
-  _socket: WebSocket;
+  websocket: WebSocket;
   _execid: any;
   _exec: any;
   state: any;
-  onconnect: any;
   ondisconnect: any;
   onStateChange: any;
   address: string;
-  constructor() {
-    this.onconnect = () => {};
-    this.ondisconnect = () => {};
-    this.onStateChange = (event: string) => {};
 
-    this._socket = null;
+
+  constructor(address?: string) {
+    this.ondisconnect = () => { };
+    this.onStateChange = (event: string) => { };
+
+    // this.websocket = null;
     this._execid = 0;
     this._exec = {};
     this.state = '';
+    this.address = address;
   }
 
-  connect(address: string) {
-    let connection = this;
-
+  public connect(address?: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (address === undefined)
-        // TODO Browser-dependent
-        address = window.location.host;
-
-      connection.address = address;
-
-      connection._socket = new websocket(connection.address);
-
-      connection._socket.onerror = error => {
-        // This will only execute if we err before connecting, since
-        // Promises can only get triggered once
-        reject("Error connecting to BCI2000 at " + connection.address);
+      if (this.address === undefined) {
+        this.address = address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
       };
 
-      connection._socket.onopen = () => {
-        connection.onconnect();
 
+      this.websocket = new websocket(this.address);
+
+      this.websocket.onerror = error => {
+        // This will only execute if we err before connecting, since
+        // Promises can only get triggered once
+        reject("Error connecting to BCI2000 at " + this.address);
+      };
+
+      this.websocket.onopen = () => {
         resolve();
       };
 
-      connection._socket.onclose = () => {
-        connection.ondisconnect();
+      this.websocket.onclose = () => {
+        this.ondisconnect();
       };
 
-      connection._socket.onmessage = event => {
-        connection._handleMessageEvent(event.data);
-      };
-    });
-  }
-
-  _handleMessageEvent(event:string) {
-    let arr = event.split(" ");
-
-    let opcode = arr[0];
-    let id = arr[1];
-    let msg = arr.slice(2).join(" ");
-
+      this.websocket.onmessage = event => {
+        let { opcode, id, contents } = JSON.parse(event.data)
     switch (opcode) {
-      case "S": // START: Starting to execute command
-        if (this._exec[id].onstart) this._exec[id].onstart(this._exec[id]);
-        break;
       case "O": // OUTPUT: Received output from command
-        this._exec[id].output += msg + " \n";
-        if (this._exec[id].onoutput) this._exec[id].onoutput(this._exec[id]);
-        break;
-      case "D": // DONE: Done executing command
-        this._exec[id].exitcode = parseInt(msg);
-        if (this._exec[id].ondone) this._exec[id].ondone(this._exec[id]);
+            this._exec[id](contents)
         delete this._exec[id];
-        break;
-      case "X":
-        this.onStateChange(msg);
         break;
       default:
         break;
     }
+      };
+    });
   }
 
-  tap(location: string){//}, onSuccess, onFailure) {
+  public tap(location: string) {
     let connection = this;
 
     let locationParameter = "WS" + location + "Server";
@@ -112,7 +86,7 @@ class BCI2K_OperatorConnection {
 
       // Use our address plus the port from the result
       return dataConnection
-        .connect(connection.address + ":" + location.split(":")[1],'')
+        .connect(connection.address + ":" + location.split(":")[1], '')
         .then(event => {
           // To keep with our old API, we actually want to wrap the
           // dataConnection, and not the connection event
@@ -122,35 +96,24 @@ class BCI2K_OperatorConnection {
     });
   }
 
-  connected() {
-    return this._socket !== null && this._socket.readyState === websocket.OPEN;
+  public connected() {
+    return this.websocket !== null && this.websocket.readyState === websocket.OPEN;
   }
 
-  execute(instruction: string){//}, ondone, onstart, onoutput) {
+  public execute(instruction: string) {
     let connection = this;
-
     if (this.connected()) {
       return new Promise((resolve, reject) => {
         let id = (++connection._execid).toString();
-
         // TODO Properly handle errors from BCI2000
-        connection._exec[id] = {
-          // onstart: onstart,
-          // onoutput: onoutput,
-          ondone: (exec) => {
-            // if (ondone) {
-              // ondone(exec);
-            // }
-            resolve(exec.output); // TODO Should pass whole thing?
-          },
-          output: "",
-          exitcode: null
-        };
-        let msg = "E " + id + " " + instruction;
-        connection._socket.send(msg);
+        connection._exec[id] = exec => resolve(exec);
+        connection.websocket.send(JSON.stringify({
+          opcode: "E",
+          id: id,
+          contents: instruction
+        }));
       });
     }
-
     // Cannot execute if not connected
     return Promise.reject(
       "Cannot execute instruction: not connected to BCI2000"
