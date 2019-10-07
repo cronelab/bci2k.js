@@ -9,88 +9,72 @@
 // https://www.bci2000.org/mediawiki/index.php/Technical_Reference:BCI2000_Messages
 
 
-let websocket = require("websocket").w3cwebsocket;
+const websocket = require("websocket").w3cwebsocket;
 
 class BCI2K_OperatorConnection {
-  constructor() {
-    this.onconnect = event => {};
-    this.ondisconnect = event => {};
-    this.onStateChange = event => {};
+  websocket: WebSocket;
+  _execid: any;
+  _exec: any;
+  state: any;
+  ondisconnect: any;
+  onStateChange: any;
+  address: string;
 
-    this._socket = null;
+
+  constructor(address?: string) {
+    this.ondisconnect = () => { };
+    this.onStateChange = (event: string) => { };
+
+    // this.websocket = null;
     this._execid = 0;
     this._exec = {};
     this.state = '';
+    this.address = address;
   }
 
-  connect(address) {
-    let connection = this;
-
+  public connect(address?: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (address === undefined)
-        // TODO Browser-dependent
-        address = window.location.host;
+      if (this.address === undefined) {
+        this.address = address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
+      };
 
-      connection.address = address;
 
-      connection._socket = new websocket(connection.address);
+      this.websocket = new websocket(this.address);
 
-      connection._socket.onerror = error => {
+      this.websocket.onerror = error => {
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
-        reject("Error connecting to BCI2000 at " + connection.address);
+        reject("Error connecting to BCI2000 at " + this.address);
       };
 
-      connection._socket.onopen = event => {
-        connection.onconnect(event);
-
-        resolve(event);
+      this.websocket.onopen = () => {
+        resolve();
       };
 
-      connection._socket.onclose = event => {
-        connection.ondisconnect(event);
+      this.websocket.onclose = () => {
+        this.ondisconnect();
       };
 
-      connection._socket.onmessage = event => {
-        connection._handleMessageEvent(event);
+      this.websocket.onmessage = event => {
+        let { opcode, id, contents } = JSON.parse(event.data)
+        switch (opcode) {
+          case "O": // OUTPUT: Received output from command
+            this._exec[id](contents)
+            delete this._exec[id];
+            break;
+          default:
+            break;
+        }
       };
     });
   }
 
-  _handleMessageEvent(event) {
-    let arr = event.data.split(" ");
-
-    let opcode = arr[0];
-    let id = arr[1];
-    let msg = arr.slice(2).join(" ");
-
-    switch (opcode) {
-      case "S": // START: Starting to execute command
-        if (this._exec[id].onstart) this._exec[id].onstart(this._exec[id]);
-        break;
-      case "O": // OUTPUT: Received output from command
-        this._exec[id].output += msg + " \n";
-        if (this._exec[id].onoutput) this._exec[id].onoutput(this._exec[id]);
-        break;
-      case "D": // DONE: Done executing command
-        this._exec[id].exitcode = parseInt(msg);
-        if (this._exec[id].ondone) this._exec[id].ondone(this._exec[id]);
-        delete this._exec[id];
-        break;
-      case "X":
-        this.onStateChange(msg);
-        break;
-      default:
-        break;
-    }
-  }
-
-  tap(location, onSuccess, onFailure) {
+  public tap(location: string) {
     let connection = this;
 
     let locationParameter = "WS" + location + "Server";
 
-    return this.execute("Get Parameter " + locationParameter).then(location => {
+    return this.execute("Get Parameter " + locationParameter).then((location: string) => {
       if (location.indexOf("does not exist") >= 0) {
         return Promise.reject("Location parameter does not exist");
       }
@@ -102,7 +86,7 @@ class BCI2K_OperatorConnection {
 
       // Use our address plus the port from the result
       return dataConnection
-        .connect(connection.address + ":" + location.split(":")[1])
+        .connect(connection.address + ":" + location.split(":")[1], '')
         .then(event => {
           // To keep with our old API, we actually want to wrap the
           // dataConnection, and not the connection event
@@ -112,35 +96,24 @@ class BCI2K_OperatorConnection {
     });
   }
 
-  connected() {
-    return this._socket !== null && this._socket.readyState === websocket.OPEN;
+  public connected() {
+    return this.websocket !== null && this.websocket.readyState === websocket.OPEN;
   }
 
-  execute(instruction, ondone, onstart, onoutput) {
+  public execute(instruction: string) {
     let connection = this;
-
     if (this.connected()) {
       return new Promise((resolve, reject) => {
         let id = (++connection._execid).toString();
-
         // TODO Properly handle errors from BCI2000
-        connection._exec[id] = {
-          onstart: onstart,
-          onoutput: onoutput,
-          ondone: exec => {
-            if (ondone) {
-              ondone(exec);
-            }
-            resolve(exec.output); // TODO Should pass whole thing?
-          },
-          output: "",
-          exitcode: null
-        };
-        let msg = "E " + id + " " + instruction;
-        connection._socket.send(msg);
+        connection._exec[id] = exec => resolve(exec);
+        connection.websocket.send(JSON.stringify({
+          opcode: "E",
+          id: id,
+          contents: instruction
+        }));
       });
     }
-
     // Cannot execute if not connected
     return Promise.reject(
       "Cannot execute instruction: not connected to BCI2000"
@@ -148,7 +121,7 @@ class BCI2K_OperatorConnection {
   }
 
   getVersion() {
-    this.execute("Version").then(x => console.log(x.split(" ")[1]));
+    this.execute("Version").then((x: string) => console.log(x.split(" ")[1]));
   }
 
   showWindow() {
@@ -159,7 +132,7 @@ class BCI2K_OperatorConnection {
     return this.execute("Hide Window");
   }
 
-  setWatch(state, ip, port) {
+  setWatch(state: string, ip: string, port: string) {
     return this.execute("Add watch " + state + " at " + ip + ":" + port);
   }
 
@@ -186,18 +159,16 @@ class BCI2K_OperatorConnection {
   stateListen() {
     setInterval(() => {
       this.execute("GET SYSTEM STATE")
-        .then(state => {
+        .then((state: string) => {
           if (state.trim() != this.state) {
             this.onStateChange(state.trim());
             this.state = state.trim();
           }
         });
     }, 500)
-
   }
 
-
-  async getSubjectName() {
+  async getSubjectName() {//Promise<string> {
     return await this.execute('Get Parameter SubjectName');
   };
 
@@ -208,16 +179,32 @@ class BCI2K_OperatorConnection {
 }
 
 class BCI2K_DataConnection {
-  constructor() {
+  _socket: WebSocket;
+  states: any;
+  signal: any;
+  signalProperties: any;
+  stateFormat: any;
+  stateVecOrder: any;
+  SignalType: any;
+  callingFrom: any;
+  onconnect: any;
+  onGenericSignal: any;
+  onStateVector: any;
+  onSignalProperties: any;
+  onStateFormat: any;
+  ondisconnect: any;
+  onReceiveBlock: any;
+  address: string;
+  constructor(address?: string) {
     this._socket = null;
 
-    this.onconnect = event => {};
-    this.onGenericSignal = data => {};
-    this.onStateVector = data => {};
-    this.onSignalProperties = data => {};
-    this.onStateFormat = data => {};
-    this.ondisconnect = event => {};
-    this.onReceiveBlock = () => {};
+    this.onconnect = () => { };
+    this.onGenericSignal = (data: any) => { };
+    this.onStateVector = (data: any) => { };
+    this.onSignalProperties = (data: any) => { };
+    this.onStateFormat = (data: any) => { };
+    this.ondisconnect = () => { };
+    this.onReceiveBlock = () => { };
 
     this.callingFrom = ''
 
@@ -233,11 +220,12 @@ class BCI2K_DataConnection {
       FLOAT32: 2,
       INT32: 3
     };
+    this.address = address;
   }
 
-  getNullTermString(dv) {
+  private getNullTermString(dv: DataView) {
     var val = "";
-    let count=0;
+    let count = 0;
     while (count < dv.byteLength) {
       var v = dv.getUint8(count);
       count++
@@ -247,70 +235,63 @@ class BCI2K_DataConnection {
     return val;
   }
 
-  connect(address, callingFrom) {
+  connect(address?: string, callingFrom?: string) {
     let connection = this;
+    if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
-    return new Promise((resolve, reject) => {
-      connection._socket = new websocket(address);
+    return new Promise<void>((resolve, reject) => {
+      connection._socket = new websocket(connection.address);
+      connection._socket.binaryType = 'arraybuffer';
 
-      connection._socket.onerror = function (event) {
+      connection._socket.onerror = () => {
+        console.log("BLAH")
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
       };
 
-      connection._socket.onopen = event => {
-        connection.onconnect(event);
-        resolve(event);
+      connection._socket.onopen = () => {
+        connection.onconnect();
+        resolve();
       };
 
-      connection._socket.onclose = event => {
-        // setTimeout(() => {
-        //   this.connect(connection._socket.url.split('//')[1])
-        // }, 1000);
-        connection.ondisconnect(event);
+      connection._socket.onclose = e => {
+        connection.ondisconnect();
+        setTimeout(() => {
+          console.log("Disconnected")
+          this.connect('');
+
+        }, 1000)
       };
 
-      connection._socket.onmessage = event => {
-        connection._handleMessageEvent(event);
+      connection._socket.onmessage = (event) => {
+        connection._decodeMessage(event.data);
       };
     });
   }
 
-  _handleMessageEvent(event) {
-    let connection = this;
-    if (typeof window !== 'undefined' || this.callingFrom == 'worker') {
-      let messageInterpreter = new FileReader();
-      messageInterpreter.onload = e => {
-        connection._decodeMessage(e.target.result);
-      };
-      messageInterpreter.readAsArrayBuffer(event.data);
-    } else {
-      connection._decodeMessage(event.data);
-    }
-  }
 
-  connected() {
+  connected(): boolean {
     return this._socket != null && this._socket.readyState === websocket.OPEN;
   }
 
-  _decodeMessage(data) {
-    let descriptor = new DataView(data,0,1).getUint8(0);
+  private _decodeMessage(data: ArrayBuffer) {
+    let descriptor = new DataView(data, 0, 1).getUint8(0);
     switch (descriptor) {
       case 3:
-      let stateFormatView = new DataView(data,1,data.byteLength-1);
-      this._decodeStateFormat(stateFormatView);
+        let stateFormatView = new DataView(data, 1, data.byteLength - 1);
+        this._decodeStateFormat(stateFormatView);
         break;
 
       case 4:
-        let supplement = new DataView(data,1,2).getUint8(0);
+        let supplement = new DataView(data, 1, 2).getUint8(0);
         switch (supplement) {
           case 1:
-            let genericSignalView = new DataView(data,2,data.byteLength-2);
+            let genericSignalView = new DataView(data, 2, data.byteLength - 2);
             this._decodeGenericSignal(genericSignalView);
             break;
           case 3:
-            let signalPropertyView = new DataView(data,2,data.byteLength-2);
+            let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
             this._decodeSignalProperties(signalPropertyView);
             break;
           default:
@@ -322,7 +303,7 @@ class BCI2K_DataConnection {
         break;
 
       case 5:
-        let stateVectorView = new DataView(data,1,data.byteLength-1);
+        let stateVectorView = new DataView(data, 1, data.byteLength - 1);
         this._decodeStateVector(stateVectorView);
         break;
 
@@ -332,8 +313,9 @@ class BCI2K_DataConnection {
     }
   }
 
-  _decodePhysicalUnits(unitstr) {
-    let units = {};
+  private _decodePhysicalUnits(unitstr: string) {
+    let units: any;
+    units = {};
     let unit = unitstr.split(" ");
     let idx = 0;
     units.offset = Number(unit[idx++]);
@@ -344,7 +326,7 @@ class BCI2K_DataConnection {
     return units;
   }
 
-  _decodeSignalProperties(data) {
+  private _decodeSignalProperties(data: DataView) {
     let propstr = this.getNullTermString(data);
     // Bugfix: There seems to not always be spaces after '{' characters
     propstr = propstr.replace(/{/g, " { ");
@@ -403,11 +385,10 @@ class BCI2K_DataConnection {
       );
 
     pidx++; // '}'
-
     this.onSignalProperties(this.signalProperties);
   }
 
-  _decodeStateFormat(data) {
+  private _decodeStateFormat(data: DataView) {
     this.stateFormat = {};
     let formatStr = this.getNullTermString(data);
 
@@ -443,30 +424,30 @@ class BCI2K_DataConnection {
     this.onStateFormat(this.stateFormat);
   }
 
-  _decodeGenericSignal(data) {
+  private _decodeGenericSignal(data: DataView) {
     let index = 0;
     let signalType = data.getUint8(index);
-    index = index+1;
-    let nChannels = data.getUint16(index,true)
-    index = index+signalType
-    let nElements = data.getUint16(index,true)
-    index = data.byteOffset+index+signalType;
-    let signalData = new DataView(data.buffer,index)
+    index = index + 1;
+    let nChannels = data.getUint16(index, true)
+    index = index + signalType
+    let nElements = data.getUint16(index, true)
+    index = data.byteOffset + index + signalType;
+    let signalData = new DataView(data.buffer, index)
     let signal = [];
     for (let ch = 0; ch < nChannels; ++ch) {
       signal.push([]);
       for (let el = 0; el < nElements; ++el) {
         switch (signalType) {
           case this.SignalType.INT16:
-        signal[ch].push(signalData.getInt16((nElements*ch+el)*2,true));
+            signal[ch].push(signalData.getInt16((nElements * ch + el) * 2, true));
             break;
 
           case this.SignalType.FLOAT32:
-              signal[ch].push(signalData.getFloat32((nElements*ch+el)*4,true));
+            signal[ch].push(signalData.getFloat32((nElements * ch + el) * 4, true));
             break;
 
           case this.SignalType.INT32:
-              signal[ch].push(signalData.getInt32((nElements*ch+el)*4,true));
+            signal[ch].push(signalData.getInt32((nElements * ch + el) * 4, true));
             break;
 
           case this.SignalType.FLOAT24:
@@ -481,9 +462,9 @@ class BCI2K_DataConnection {
     this.signal = signal;
     this.onGenericSignal(signal);
   }
-  
 
-  _decodeStateVector(dv) {
+
+  private _decodeStateVector(dv: DataView) {
     if (this.stateVecOrder == null) return;
 
     // Currently, states are maximum 32 bit unsigned integers
@@ -491,13 +472,13 @@ class BCI2K_DataConnection {
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
     let index = 1;
-    let _stateVectorLength = new DataView(dv.buffer,index,2)
-    index = index+3;
+    let _stateVectorLength = new DataView(dv.buffer, index, 2)
+    index = index + 3;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
-    let _numVectors = new DataView(dv.buffer,index,2)
-    index = index+3;
+    let _numVectors = new DataView(dv.buffer, index, 2)
+    index = index + 3;
     let numVectors = parseInt(this.getNullTermString(_numVectors));
-    let data = new DataView(dv.buffer,index);
+    let data = new DataView(dv.buffer, index);
     let states = {};
     for (let state in this.stateFormat)
       states[state] = Array(numVectors).fill(
@@ -505,7 +486,7 @@ class BCI2K_DataConnection {
       );
 
     for (let vecIdx = 0; vecIdx < numVectors; vecIdx++) {
-      let vec = new Uint8Array(data.buffer,data.byteOffset + (vecIdx*stateVectorLength), stateVectorLength);
+      let vec = new Uint8Array(data.buffer, data.byteOffset + (vecIdx * stateVectorLength), stateVectorLength);
       let bits = [];
       for (let byteIdx = 0; byteIdx < vec.length; byteIdx++) {
         bits.push((vec[byteIdx] & 0x01) !== 0 ? 1 : 0);
@@ -517,7 +498,7 @@ class BCI2K_DataConnection {
         bits.push((vec[byteIdx] & 0x40) !== 0 ? 1 : 0);
         bits.push((vec[byteIdx] & 0x80) !== 0 ? 1 : 0);
       }
-      
+
       for (let stateIdx = 0; stateIdx < this.stateVecOrder.length; stateIdx++) {
         let fmt = this.stateFormat[this.stateVecOrder[stateIdx][0]];
         let offset = fmt.byteLocation * 8 + fmt.bitLocation;
