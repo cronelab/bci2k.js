@@ -57,14 +57,14 @@ class BCI2K_OperatorConnection {
 
       this.websocket.onmessage = event => {
         let { opcode, id, contents } = JSON.parse(event.data)
-    switch (opcode) {
-      case "O": // OUTPUT: Received output from command
+        switch (opcode) {
+          case "O": // OUTPUT: Received output from command
             this._exec[id](contents)
-        delete this._exec[id];
-        break;
-      default:
-        break;
-    }
+            delete this._exec[id];
+            break;
+          default:
+            break;
+        }
       };
     });
   }
@@ -166,11 +166,9 @@ class BCI2K_OperatorConnection {
           }
         });
     }, 500)
-
   }
 
-
-  async getSubjectName() {
+  async getSubjectName() {//Promise<string> {
     return await this.execute('Get Parameter SubjectName');
   };
 
@@ -181,7 +179,7 @@ class BCI2K_OperatorConnection {
 }
 
 class BCI2K_DataConnection {
-  _socket: any;
+  _socket: WebSocket;
   states: any;
   signal: any;
   signalProperties: any;
@@ -196,17 +194,17 @@ class BCI2K_DataConnection {
   onStateFormat: any;
   ondisconnect: any;
   onReceiveBlock: any;
-  address: any;
-  constructor() {
+  address: string;
+  constructor(address?: string) {
     this._socket = null;
 
-    this.onconnect = event => {};
-    this.onGenericSignal = data => {};
-    this.onStateVector = data => {};
-    this.onSignalProperties = data => {};
-    this.onStateFormat = data => {};
-    this.ondisconnect = event => {};
-    this.onReceiveBlock = () => {};
+    this.onconnect = () => { };
+    this.onGenericSignal = (data: any) => { };
+    this.onStateVector = (data: any) => { };
+    this.onSignalProperties = (data: any) => { };
+    this.onStateFormat = (data: any) => { };
+    this.ondisconnect = () => { };
+    this.onReceiveBlock = () => { };
 
     this.callingFrom = ''
 
@@ -222,11 +220,12 @@ class BCI2K_DataConnection {
       FLOAT32: 2,
       INT32: 3
     };
+    this.address = address;
   }
 
-  getNullTermString(dv) {
+  private getNullTermString(dv: DataView) {
     var val = "";
-    let count=0;
+    let count = 0;
     while (count < dv.byteLength) {
       var v = dv.getUint8(count);
       count++
@@ -236,14 +235,16 @@ class BCI2K_DataConnection {
     return val;
   }
 
-  connect(address: string, callingFrom: string) {
+  connect(address?: string, callingFrom?: string) {
     let connection = this;
+    if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
-    return new Promise((resolve, reject) => {
-      connection._socket = new websocket(address);
+    return new Promise<void>((resolve, reject) => {
+      connection._socket = new websocket(connection.address);
       connection._socket.binaryType = 'arraybuffer';
 
-      connection._socket.onerror = () =>  {
+      connection._socket.onerror = () => {
+        console.log("BLAH")
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
@@ -254,11 +255,13 @@ class BCI2K_DataConnection {
         resolve();
       };
 
-      connection._socket.onclose = () => {
-        // setTimeout(() => {
-        //   this.connect(connection._socket.url.split('//')[1])
-        // }, 1000);
+      connection._socket.onclose = e => {
         connection.ondisconnect();
+        setTimeout(() => {
+          console.log("Disconnected")
+          this.connect('');
+
+        }, 1000)
       };
 
       connection._socket.onmessage = (event) => {
@@ -268,26 +271,27 @@ class BCI2K_DataConnection {
   }
 
 
-  connected() {
+  connected(): boolean {
     return this._socket != null && this._socket.readyState === websocket.OPEN;
   }
 
-  _decodeMessage(data: ArrayBuffer) {
+  private _decodeMessage(data: ArrayBuffer) {
+    let descriptor = new DataView(data, 0, 1).getUint8(0);
     switch (descriptor) {
       case 3:
-      let stateFormatView = new DataView(data,1,data.byteLength-1);
-      this._decodeStateFormat(stateFormatView);
+        let stateFormatView = new DataView(data, 1, data.byteLength - 1);
+        this._decodeStateFormat(stateFormatView);
         break;
 
       case 4:
-        let supplement = new DataView(data,1,2).getUint8(0);
+        let supplement = new DataView(data, 1, 2).getUint8(0);
         switch (supplement) {
           case 1:
-            let genericSignalView = new DataView(data,2,data.byteLength-2);
+            let genericSignalView = new DataView(data, 2, data.byteLength - 2);
             this._decodeGenericSignal(genericSignalView);
             break;
           case 3:
-            let signalPropertyView = new DataView(data,2,data.byteLength-2);
+            let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
             this._decodeSignalProperties(signalPropertyView);
             break;
           default:
@@ -299,7 +303,7 @@ class BCI2K_DataConnection {
         break;
 
       case 5:
-        let stateVectorView = new DataView(data,1,data.byteLength-1);
+        let stateVectorView = new DataView(data, 1, data.byteLength - 1);
         this._decodeStateVector(stateVectorView);
         break;
 
@@ -309,9 +313,9 @@ class BCI2K_DataConnection {
     }
   }
 
-  _decodePhysicalUnits(unitstr: string) {
-let units: any;
-units = {};
+  private _decodePhysicalUnits(unitstr: string) {
+    let units: any;
+    units = {};
     let unit = unitstr.split(" ");
     let idx = 0;
     units.offset = Number(unit[idx++]);
@@ -322,7 +326,7 @@ units = {};
     return units;
   }
 
-  _decodeSignalProperties(data: DataView) {
+  private _decodeSignalProperties(data: DataView) {
     let propstr = this.getNullTermString(data);
     // Bugfix: There seems to not always be spaces after '{' characters
     propstr = propstr.replace(/{/g, " { ");
@@ -381,11 +385,10 @@ units = {};
       );
 
     pidx++; // '}'
-
     this.onSignalProperties(this.signalProperties);
   }
 
-  _decodeStateFormat(data: DataView) {
+  private _decodeStateFormat(data: DataView) {
     this.stateFormat = {};
     let formatStr = this.getNullTermString(data);
 
@@ -421,30 +424,30 @@ units = {};
     this.onStateFormat(this.stateFormat);
   }
 
-  _decodeGenericSignal(data: DataView) {
+  private _decodeGenericSignal(data: DataView) {
     let index = 0;
     let signalType = data.getUint8(index);
-    index = index+1;
-    let nChannels = data.getUint16(index,true)
-    index = index+signalType
-    let nElements = data.getUint16(index,true)
-    index = data.byteOffset+index+signalType;
-    let signalData = new DataView(data.buffer,index)
+    index = index + 1;
+    let nChannels = data.getUint16(index, true)
+    index = index + signalType
+    let nElements = data.getUint16(index, true)
+    index = data.byteOffset + index + signalType;
+    let signalData = new DataView(data.buffer, index)
     let signal = [];
     for (let ch = 0; ch < nChannels; ++ch) {
       signal.push([]);
       for (let el = 0; el < nElements; ++el) {
         switch (signalType) {
           case this.SignalType.INT16:
-        signal[ch].push(signalData.getInt16((nElements*ch+el)*2,true));
+            signal[ch].push(signalData.getInt16((nElements * ch + el) * 2, true));
             break;
 
           case this.SignalType.FLOAT32:
-              signal[ch].push(signalData.getFloat32((nElements*ch+el)*4,true));
+            signal[ch].push(signalData.getFloat32((nElements * ch + el) * 4, true));
             break;
 
           case this.SignalType.INT32:
-              signal[ch].push(signalData.getInt32((nElements*ch+el)*4,true));
+            signal[ch].push(signalData.getInt32((nElements * ch + el) * 4, true));
             break;
 
           case this.SignalType.FLOAT24:
@@ -459,9 +462,9 @@ units = {};
     this.signal = signal;
     this.onGenericSignal(signal);
   }
-  
 
-  _decodeStateVector(dv: DataView) {
+
+  private _decodeStateVector(dv: DataView) {
     if (this.stateVecOrder == null) return;
 
     // Currently, states are maximum 32 bit unsigned integers
@@ -469,13 +472,13 @@ units = {};
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
     let index = 1;
-    let _stateVectorLength = new DataView(dv.buffer,index,2)
-    index = index+3;
+    let _stateVectorLength = new DataView(dv.buffer, index, 2)
+    index = index + 3;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
-    let _numVectors = new DataView(dv.buffer,index,2)
-    index = index+3;
+    let _numVectors = new DataView(dv.buffer, index, 2)
+    index = index + 3;
     let numVectors = parseInt(this.getNullTermString(_numVectors));
-    let data = new DataView(dv.buffer,index);
+    let data = new DataView(dv.buffer, index);
     let states = {};
     for (let state in this.stateFormat)
       states[state] = Array(numVectors).fill(
@@ -483,7 +486,7 @@ units = {};
       );
 
     for (let vecIdx = 0; vecIdx < numVectors; vecIdx++) {
-      let vec = new Uint8Array(data.buffer,data.byteOffset + (vecIdx*stateVectorLength), stateVectorLength);
+      let vec = new Uint8Array(data.buffer, data.byteOffset + (vecIdx * stateVectorLength), stateVectorLength);
       let bits = [];
       for (let byteIdx = 0; byteIdx < vec.length; byteIdx++) {
         bits.push((vec[byteIdx] & 0x01) !== 0 ? 1 : 0);
@@ -495,7 +498,7 @@ units = {};
         bits.push((vec[byteIdx] & 0x40) !== 0 ? 1 : 0);
         bits.push((vec[byteIdx] & 0x80) !== 0 ? 1 : 0);
       }
-      
+
       for (let stateIdx = 0; stateIdx < this.stateVecOrder.length; stateIdx++) {
         let fmt = this.stateFormat[this.stateVecOrder[stateIdx][0]];
         let offset = fmt.byteLocation * 8 + fmt.bitLocation;
