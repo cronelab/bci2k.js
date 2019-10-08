@@ -254,53 +254,28 @@ class BCI2K_DataConnection {
     return new Promise<void>((resolve, reject) => {
       sock.connect('tcp://127.0.0.1:5556');
       resolve();
-      sock.subscribe('\x04');
-      sock.on('message', function (topic, message) {
-        connection._decodeMessage(toArrayBuffer(topic));
+      //GenericSignal
+      sock.subscribe('\x04\x01');
+      //sSignalProperties
+      sock.subscribe('\x04\x03');
+      //StateVector
+      sock.subscribe('\x05');
+      //sStateFormat
+      sock.subscribe('\x03');
+      sock.on('message', msg => {
+        connection._decodeMessage(toArrayBuffer(msg));
       });
 
-      //   connection._socket = new websocket(connection.address);
-      //   connection._socket.binaryType = 'arraybuffer';
-
-      //   connection._socket.onerror = () => {
-      //     console.log("BLAH")
-      //     // This will only execute if we err before connecting, since
-      //     // Promises can only get triggered once
-      //     reject("Error connecting to data source at " + connection.address);
-      //   };
-
-      //   connection._socket.onopen = () => {
-      //     connection.onconnect();
-      //     resolve();
-      //   };
-
-      //   connection._socket.onclose = e => {
-      //     connection.ondisconnect();
-      //     setTimeout(() => {
-      //       console.log("Disconnected")
-      //       this.connect('');
-
-      //     }, 1000)
-      //   };
-
-      //   connection._socket.onmessage = (event) => {
-      //     connection._decodeMessage(event.data);
-      //   };
     });
-  }
-
-
-  connected(): boolean {
-    return this._socket != null && this._socket.readyState === websocket.OPEN;
   }
 
   private _decodeMessage(data: ArrayBuffer) {
     let descriptor = new DataView(data, 0, 1).getUint8(0);
     switch (descriptor) {
-      // case 3:
-      //   let stateFormatView = new DataView(data, 1, data.byteLength - 1);
-      //   this._decodeStateFormat(stateFormatView);
-      //   break;
+      case 3:
+        let stateFormatView = new DataView(data, 1, data.byteLength - 1);
+        this._decodeStateFormat(stateFormatView);
+        break;
 
       case 4:
         let supplement = new DataView(data, 1, 2).getUint8(0);
@@ -310,10 +285,10 @@ class BCI2K_DataConnection {
             let genericSignalView = new DataView(data, 2, data.byteLength - 2);
             this._decodeGenericSignal(genericSignalView);
             break;
-          // case 3:
-          //   let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
-          //   this._decodeSignalProperties(signalPropertyView);
-          //   break;
+          case 3:
+            let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
+            this._decodeSignalProperties(signalPropertyView);
+            break;
           default:
             console.error("Unsupported Supplement: " + supplement.toString());
             break;
@@ -322,10 +297,10 @@ class BCI2K_DataConnection {
 
         break;
 
-      // case 5:
-      //   let stateVectorView = new DataView(data, 1, data.byteLength - 1);
-      //   this._decodeStateVector(stateVectorView);
-      //   break;
+      case 5:
+        let stateVectorView = new DataView(data, 1, data.byteLength - 1);
+        this._decodeStateVector(stateVectorView);
+        break;
 
       default:
         console.error("Unsupported Descriptor: " + descriptor.toString());
@@ -493,7 +468,7 @@ class BCI2K_DataConnection {
     // Bits must be populated in increasing significance
     let index = 1;
     let _stateVectorLength = new DataView(dv.buffer, index, 2)
-    index = index + 3;
+    index = index + 2;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
     let _numVectors = new DataView(dv.buffer, index, 2)
     index = index + 3;
