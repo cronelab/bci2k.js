@@ -21,23 +21,28 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /\.ts$/,
-      loader: "ts-loader"
-    },{
-      test: /\.js$/,
-      exclude: /(node_modules)/,
-      use: {
-        loader: "babel-loader",
-        options: {
-          presets: ['@babel/preset-env'],
-          plugins: [
-            "@babel/plugin-syntax-dynamic-import",
-            "@babel/plugin-transform-modules-commonjs",
-            "@babel/plugin-transform-runtime",
-            "@babel/plugin-proposal-class-properties",
-          ]
+        test: /\.ts$/,
+        loader: "ts-loader"
+      }, {
+        test: /\.js$/,
+        exclude: /(node_modules)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ['@babel/preset-env'],
+            plugins: [
+              "@babel/plugin-syntax-dynamic-import",
+              "@babel/plugin-transform-modules-commonjs",
+              "@babel/plugin-transform-runtime",
+              "@babel/plugin-proposal-class-properties",
+            ]
+          }
         }
+      },
+      {
+        test: /\.node$/,
+        use: 'node-loader'
       }
-    }]
+    ]
   }
 };

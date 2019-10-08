@@ -1,30 +1,6 @@
+declare var zmq: any, sock: any;
 declare const websocket: any;
-declare class BCI2K_OperatorConnection {
-    websocket: WebSocket;
-    _execid: any;
-    _exec: any;
-    state: any;
-    ondisconnect: any;
-    onStateChange: any;
-    address: string;
-    constructor(address?: string);
-    connect(address?: string): Promise<void>;
-    tap(location: string): Promise<BCI2K_DataConnection>;
-    connected(): boolean;
-    execute(instruction: string): Promise<unknown>;
-    getVersion(): void;
-    showWindow(): Promise<unknown>;
-    hideWindow(): Promise<unknown>;
-    setWatch(state: string, ip: string, port: string): Promise<unknown>;
-    resetSystem(): Promise<unknown>;
-    setConfig(): Promise<unknown>;
-    start(): Promise<unknown>;
-    stop(): Promise<unknown>;
-    kill(): Promise<unknown>;
-    stateListen(): void;
-    getSubjectName(): Promise<unknown>;
-    getTaskName(): Promise<unknown>;
-}
+declare function toArrayBuffer(buffer: any): ArrayBuffer;
 declare class BCI2K_DataConnection {
     _socket: WebSocket;
     states: any;

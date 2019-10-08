@@ -8,176 +8,186 @@
 //To see how the BCI2000 messages are implemented in BCI2000 see here:
 // https://www.bci2000.org/mediawiki/index.php/Technical_Reference:BCI2000_Messages
 
+var zmq = require('zeromq'),
+  sock = zmq.socket('sub');
+
 
 const websocket = require("websocket").w3cwebsocket;
 
-class BCI2K_OperatorConnection {
-  websocket: WebSocket;
-  _execid: any;
-  _exec: any;
-  state: any;
-  ondisconnect: any;
-  onStateChange: any;
-  address: string;
+// class BCI2K_OperatorConnection {
+//   websocket: WebSocket;
+//   _execid: any;
+//   _exec: any;
+//   state: any;
+//   ondisconnect: any;
+//   onStateChange: any;
+//   address: string;
 
 
-  constructor(address?: string) {
-    this.ondisconnect = () => { };
-    this.onStateChange = (event: string) => { };
+//   constructor(address?: string) {
+//     this.ondisconnect = () => { };
+//     this.onStateChange = (event: string) => { };
 
-    // this.websocket = null;
-    this._execid = 0;
-    this._exec = {};
-    this.state = '';
-    this.address = address;
+//     // this.websocket = null;
+//     this._execid = 0;
+//     this._exec = {};
+//     this.state = '';
+//     this.address = address;
+//   }
+
+//   public connect(address?: string): Promise<void> {
+//     return new Promise((resolve, reject) => {
+//       if (this.address === undefined) {
+//         this.address = address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
+//       };
+
+
+//       this.websocket = new websocket(this.address);
+
+//       this.websocket.onerror = error => {
+//         // This will only execute if we err before connecting, since
+//         // Promises can only get triggered once
+//         reject("Error connecting to BCI2000 at " + this.address);
+//       };
+
+//       this.websocket.onopen = () => {
+//         resolve();
+//       };
+
+//       this.websocket.onclose = () => {
+//         this.ondisconnect();
+//       };
+
+//       this.websocket.onmessage = event => {
+//         let { opcode, id, contents } = JSON.parse(event.data)
+//         switch (opcode) {
+//           case "O": // OUTPUT: Received output from command
+//             this._exec[id](contents)
+//             delete this._exec[id];
+//             break;
+//           default:
+//             break;
+//         }
+//       };
+//     });
+//   }
+
+//   public tap(location: string) {
+//     let connection = this;
+
+//     let locationParameter = "WS" + location + "Server";
+
+//     return this.execute("Get Parameter " + locationParameter).then((location: string) => {
+//       if (location.indexOf("does not exist") >= 0) {
+//         return Promise.reject("Location parameter does not exist");
+//       }
+//       if (location === "") {
+//         return Promise.reject("Location parameter not set");
+//       }
+
+//       let dataConnection = new BCI2K_DataConnection();
+
+//       // Use our address plus the port from the result
+//       return dataConnection
+//         .connect(connection.address + ":" + location.split(":")[1], '')
+//         .then(event => {
+//           // To keep with our old API, we actually want to wrap the
+//           // dataConnection, and not the connection event
+//           // TODO This means we can't get the connection event!
+//           return dataConnection;
+//         });
+//     });
+//   }
+
+//   public connected() {
+//     return this.websocket !== null && this.websocket.readyState === websocket.OPEN;
+//   }
+
+//   public execute(instruction: string) {
+//     let connection = this;
+//     if (this.connected()) {
+//       return new Promise((resolve, reject) => {
+//         let id = (++connection._execid).toString();
+//         // TODO Properly handle errors from BCI2000
+//         connection._exec[id] = exec => resolve(exec);
+//         connection.websocket.send(JSON.stringify({
+//           opcode: "E",
+//           id: id,
+//           contents: instruction
+//         }));
+//       });
+//     }
+//     // Cannot execute if not connected
+//     return Promise.reject(
+//       "Cannot execute instruction: not connected to BCI2000"
+//     );
+//   }
+
+//   getVersion() {
+//     this.execute("Version").then((x: string) => console.log(x.split(" ")[1]));
+//   }
+
+//   showWindow() {
+//     return this.execute("Show Window");
+//   }
+
+//   hideWindow() {
+//     return this.execute("Hide Window");
+//   }
+
+//   setWatch(state: string, ip: string, port: string) {
+//     return this.execute("Add watch " + state + " at " + ip + ":" + port);
+//   }
+
+//   resetSystem() {
+//     return this.execute("Reset System");
+//   }
+
+//   setConfig() {
+//     return this.execute("Set Config");
+//   }
+
+//   start() {
+//     return this.execute("Start");
+//   }
+
+//   stop() {
+//     return this.execute("Stop");
+//   }
+
+//   kill() {
+//     return this.execute("Exit");
+//   }
+
+//   stateListen() {
+//     setInterval(() => {
+//       this.execute("GET SYSTEM STATE")
+//         .then((state: string) => {
+//           if (state.trim() != this.state) {
+//             this.onStateChange(state.trim());
+//             this.state = state.trim();
+//           }
+//         });
+//     }, 500)
+//   }
+
+//   async getSubjectName() {//Promise<string> {
+//     return await this.execute('Get Parameter SubjectName');
+//   };
+
+//   async getTaskName() {
+//     return await this.execute('Get Parameter DataFile');
+//   };
+
+// }
+function toArrayBuffer(buffer) {
+  var ab = new ArrayBuffer(buffer.length);
+  var view = new Uint8Array(ab);
+  for (var i = 0; i < buffer.length; ++i) {
+    view[i] = buffer[i];
   }
-
-  public connect(address?: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.address === undefined) {
-        this.address = address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
-      };
-
-
-      this.websocket = new websocket(this.address);
-
-      this.websocket.onerror = error => {
-        // This will only execute if we err before connecting, since
-        // Promises can only get triggered once
-        reject("Error connecting to BCI2000 at " + this.address);
-      };
-
-      this.websocket.onopen = () => {
-        resolve();
-      };
-
-      this.websocket.onclose = () => {
-        this.ondisconnect();
-      };
-
-      this.websocket.onmessage = event => {
-        let { opcode, id, contents } = JSON.parse(event.data)
-        switch (opcode) {
-          case "O": // OUTPUT: Received output from command
-            this._exec[id](contents)
-            delete this._exec[id];
-            break;
-          default:
-            break;
-        }
-      };
-    });
-  }
-
-  public tap(location: string) {
-    let connection = this;
-
-    let locationParameter = "WS" + location + "Server";
-
-    return this.execute("Get Parameter " + locationParameter).then((location: string) => {
-      if (location.indexOf("does not exist") >= 0) {
-        return Promise.reject("Location parameter does not exist");
-      }
-      if (location === "") {
-        return Promise.reject("Location parameter not set");
-      }
-
-      let dataConnection = new BCI2K_DataConnection();
-
-      // Use our address plus the port from the result
-      return dataConnection
-        .connect(connection.address + ":" + location.split(":")[1], '')
-        .then(event => {
-          // To keep with our old API, we actually want to wrap the
-          // dataConnection, and not the connection event
-          // TODO This means we can't get the connection event!
-          return dataConnection;
-        });
-    });
-  }
-
-  public connected() {
-    return this.websocket !== null && this.websocket.readyState === websocket.OPEN;
-  }
-
-  public execute(instruction: string) {
-    let connection = this;
-    if (this.connected()) {
-      return new Promise((resolve, reject) => {
-        let id = (++connection._execid).toString();
-        // TODO Properly handle errors from BCI2000
-        connection._exec[id] = exec => resolve(exec);
-        connection.websocket.send(JSON.stringify({
-          opcode: "E",
-          id: id,
-          contents: instruction
-        }));
-      });
-    }
-    // Cannot execute if not connected
-    return Promise.reject(
-      "Cannot execute instruction: not connected to BCI2000"
-    );
-  }
-
-  getVersion() {
-    this.execute("Version").then((x: string) => console.log(x.split(" ")[1]));
-  }
-
-  showWindow() {
-    return this.execute("Show Window");
-  }
-
-  hideWindow() {
-    return this.execute("Hide Window");
-  }
-
-  setWatch(state: string, ip: string, port: string) {
-    return this.execute("Add watch " + state + " at " + ip + ":" + port);
-  }
-
-  resetSystem() {
-    return this.execute("Reset System");
-  }
-
-  setConfig() {
-    return this.execute("Set Config");
-  }
-
-  start() {
-    return this.execute("Start");
-  }
-
-  stop() {
-    return this.execute("Stop");
-  }
-
-  kill() {
-    return this.execute("Exit");
-  }
-
-  stateListen() {
-    setInterval(() => {
-      this.execute("GET SYSTEM STATE")
-        .then((state: string) => {
-          if (state.trim() != this.state) {
-            this.onStateChange(state.trim());
-            this.state = state.trim();
-          }
-        });
-    }, 500)
-  }
-
-  async getSubjectName() {//Promise<string> {
-    return await this.execute('Get Parameter SubjectName');
-  };
-
-  async getTaskName() {
-    return await this.execute('Get Parameter DataFile');
-  };
-
+  return ab;
 }
-
 class BCI2K_DataConnection {
   _socket: WebSocket;
   states: any;
@@ -195,6 +205,7 @@ class BCI2K_DataConnection {
   ondisconnect: any;
   onReceiveBlock: any;
   address: string;
+
   constructor(address?: string) {
     this._socket = null;
 
@@ -235,38 +246,46 @@ class BCI2K_DataConnection {
     return val;
   }
 
+
   connect(address?: string, callingFrom?: string) {
     let connection = this;
     if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
     return new Promise<void>((resolve, reject) => {
-      connection._socket = new websocket(connection.address);
-      connection._socket.binaryType = 'arraybuffer';
+      sock.connect('tcp://127.0.0.1:5556');
+      resolve();
+      sock.subscribe('\x04');
+      sock.on('message', function (topic, message) {
+        connection._decodeMessage(toArrayBuffer(topic));
+      });
 
-      connection._socket.onerror = () => {
-        console.log("BLAH")
-        // This will only execute if we err before connecting, since
-        // Promises can only get triggered once
-        reject("Error connecting to data source at " + connection.address);
-      };
+      //   connection._socket = new websocket(connection.address);
+      //   connection._socket.binaryType = 'arraybuffer';
 
-      connection._socket.onopen = () => {
-        connection.onconnect();
-        resolve();
-      };
+      //   connection._socket.onerror = () => {
+      //     console.log("BLAH")
+      //     // This will only execute if we err before connecting, since
+      //     // Promises can only get triggered once
+      //     reject("Error connecting to data source at " + connection.address);
+      //   };
 
-      connection._socket.onclose = e => {
-        connection.ondisconnect();
-        setTimeout(() => {
-          console.log("Disconnected")
-          this.connect('');
+      //   connection._socket.onopen = () => {
+      //     connection.onconnect();
+      //     resolve();
+      //   };
 
-        }, 1000)
-      };
+      //   connection._socket.onclose = e => {
+      //     connection.ondisconnect();
+      //     setTimeout(() => {
+      //       console.log("Disconnected")
+      //       this.connect('');
 
-      connection._socket.onmessage = (event) => {
-        connection._decodeMessage(event.data);
-      };
+      //     }, 1000)
+      //   };
+
+      //   connection._socket.onmessage = (event) => {
+      //     connection._decodeMessage(event.data);
+      //   };
     });
   }
 
@@ -278,22 +297,23 @@ class BCI2K_DataConnection {
   private _decodeMessage(data: ArrayBuffer) {
     let descriptor = new DataView(data, 0, 1).getUint8(0);
     switch (descriptor) {
-      case 3:
-        let stateFormatView = new DataView(data, 1, data.byteLength - 1);
-        this._decodeStateFormat(stateFormatView);
-        break;
+      // case 3:
+      //   let stateFormatView = new DataView(data, 1, data.byteLength - 1);
+      //   this._decodeStateFormat(stateFormatView);
+      //   break;
 
       case 4:
         let supplement = new DataView(data, 1, 2).getUint8(0);
+
         switch (supplement) {
           case 1:
             let genericSignalView = new DataView(data, 2, data.byteLength - 2);
             this._decodeGenericSignal(genericSignalView);
             break;
-          case 3:
-            let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
-            this._decodeSignalProperties(signalPropertyView);
-            break;
+          // case 3:
+          //   let signalPropertyView = new DataView(data, 2, data.byteLength - 2);
+          //   this._decodeSignalProperties(signalPropertyView);
+          //   break;
           default:
             console.error("Unsupported Supplement: " + supplement.toString());
             break;
@@ -302,10 +322,10 @@ class BCI2K_DataConnection {
 
         break;
 
-      case 5:
-        let stateVectorView = new DataView(data, 1, data.byteLength - 1);
-        this._decodeStateVector(stateVectorView);
-        break;
+      // case 5:
+      //   let stateVectorView = new DataView(data, 1, data.byteLength - 1);
+      //   this._decodeStateVector(stateVectorView);
+      //   break;
 
       default:
         console.error("Unsupported Descriptor: " + descriptor.toString());
@@ -517,6 +537,6 @@ class BCI2K_DataConnection {
 }
 
 module.exports = {
-  bciOperator: BCI2K_OperatorConnection,
+  // bciOperator: BCI2K_OperatorConnection,
   bciData: BCI2K_DataConnection
 };
