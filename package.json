@@ -1,6 +1,6 @@
 {
-  "name": "@cronelab/bci2k",
-  "version": "2.2.0",
+  "name": "bci2k",
+  "version": "2.2.1",
   "description": "A javascript connector for BCI2000",
   "main": "dist/index.js",
   "scripts": {

@@ -466,16 +466,16 @@ class BCI2K_DataConnection {
 
   private _decodeStateVector(dv: DataView) {
     if (this.stateVecOrder == null) return;
-
     // Currently, states are maximum 32 bit unsigned integers
     // BitLocation 0 refers to the least significant bit of a byte in the packet
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
     let index = 1;
     let _stateVectorLength = new DataView(dv.buffer, index, 2)
-    index = index + 3;
+    index = index + 2;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
     let _numVectors = new DataView(dv.buffer, index, 2)
+
     index = index + 3;
     let numVectors = parseInt(this.getNullTermString(_numVectors));
     let data = new DataView(dv.buffer, index);
@@ -511,6 +511,7 @@ class BCI2K_DataConnection {
         states[this.stateVecOrder[stateIdx][0]][vecIdx] = val;
       }
     }
+    console.log(states);
     this.onStateVector(states);
     this.states = states;
   }

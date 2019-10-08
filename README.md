@@ -12,7 +12,7 @@ bci2k.js relies on a binary server called BCI2000Web, which allows browsers to c
 ## Install
 
 ```bash
-npm install --save @cronelab/bci2k
+npm install --save bci2k
 ```
 
 ## Usage
