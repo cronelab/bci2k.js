@@ -15,7 +15,7 @@ module.exports = {
   },
   mode: devMode ? "development" : "production",
   devtool: devMode ? "inline-source-map" : "source-map",
-  externals: ['websocket'],
+  externals: ['ssl', 'uv'],
   resolve: {
     extensions: [".ts", ".js"]
   },
@@ -23,7 +23,7 @@ module.exports = {
     rules: [{
       test: /\.ts$/,
       loader: "ts-loader"
-    },{
+    }, {
       test: /\.js$/,
       exclude: /(node_modules)/,
       use: {

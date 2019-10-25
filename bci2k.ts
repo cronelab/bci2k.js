@@ -8,8 +8,7 @@
 //To see how the BCI2000 messages are implemented in BCI2000 see here:
 // https://www.bci2000.org/mediawiki/index.php/Technical_Reference:BCI2000_Messages
 
-
-const websocket = require("websocket").w3cwebsocket;
+import 'magic-script-polyfills';
 
 class BCI2K_OperatorConnection {
   websocket: WebSocket;
@@ -39,7 +38,7 @@ class BCI2K_OperatorConnection {
       };
 
 
-      this.websocket = new websocket(this.address);
+      this.websocket = new WebSocket(this.address);
 
       this.websocket.onerror = error => {
         // This will only execute if we err before connecting, since
@@ -97,7 +96,7 @@ class BCI2K_OperatorConnection {
   }
 
   public connected() {
-    return this.websocket !== null && this.websocket.readyState === websocket.OPEN;
+    return this.websocket !== null && this.websocket.readyState === this.websocket.OPEN;
   }
 
   public execute(instruction: string) {
@@ -240,7 +239,7 @@ class BCI2K_DataConnection {
     if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
     return new Promise<void>((resolve, reject) => {
-      connection._socket = new websocket(connection.address);
+      connection._socket = new WebSocket(connection.address);
       connection._socket.binaryType = 'arraybuffer';
 
       connection._socket.onerror = () => {
@@ -272,7 +271,7 @@ class BCI2K_DataConnection {
 
 
   connected(): boolean {
-    return this._socket != null && this._socket.readyState === websocket.OPEN;
+    return this._socket != null && this._socket.readyState === this._socket.OPEN;
   }
 
   private _decodeMessage(data: ArrayBuffer) {
