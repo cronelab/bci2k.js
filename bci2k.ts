@@ -244,7 +244,6 @@ class BCI2K_DataConnection {
       connection._socket.binaryType = 'arraybuffer';
 
       connection._socket.onerror = () => {
-        console.log("BLAH")
         // This will only execute if we err before connecting, since
         // Promises can only get triggered once
         reject("Error connecting to data source at " + connection.address);
@@ -472,10 +471,9 @@ class BCI2K_DataConnection {
     // Bits must be populated in increasing significance
     let index = 1;
     let _stateVectorLength = new DataView(dv.buffer, index, 2)
-    index = index + 2;
+    index = index + 3;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
     let _numVectors = new DataView(dv.buffer, index, 2)
-
     index = index + 3;
     let numVectors = parseInt(this.getNullTermString(_numVectors));
     let data = new DataView(dv.buffer, index);
@@ -511,7 +509,6 @@ class BCI2K_DataConnection {
         states[this.stateVecOrder[stateIdx][0]][vecIdx] = val;
       }
     }
-    console.log(states);
     this.onStateVector(states);
     this.states = states;
   }

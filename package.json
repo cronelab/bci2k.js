@@ -1,11 +1,11 @@
 {
   "name": "bci2k",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A javascript connector for BCI2000",
   "main": "dist/index.js",
   "scripts": {
-    "build": "NODE_ENV=production webpack",
-    "dev": "NODE_ENV=development webpack",
+    "build": "cross-env NODE_ENV=production webpack",
+    "dev": "cross-env NODE_ENV=development webpack",
     "example": "node example/node_example"
   },
   "repository": {
@@ -27,20 +27,21 @@
   },
   "homepage": "https://github.com/cronelab/bci2k.js#readme",
   "devDependencies": {
-    "@babel/core": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
     "babel-loader": "^8.0.6",
-    "webpack": "^4.41.0",
-    "webpack-cli": "^3.3.9"
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/runtime": "^7.6.2",
-    "@types/node": "^12.7.11",
-    "@types/websocket": "0.0.40",
-    "ts-loader": "^6.2.0",
-    "typescript": "^3.6.3",
-    "websocket": "1.0.30"
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/runtime": "^7.7.7",
+    "@types/node": "^12.12.21",
+    "@types/websocket": "1.0.0",
+    "cross-env": "^6.0.3",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4",
+    "websocket": "1.0.31"
   }
 }
