@@ -275,7 +275,7 @@ class BCI2K_DataConnection {
   }
 
   private _decodeMessage(data: ArrayBuffer) {
-    let descriptor = new DataView(data, 0, 1).getUint8(0);
+	let descriptor = new DataView(data, 0, 1).getUint8(0);
     switch (descriptor) {
       case 3:
         let stateFormatView = new DataView(data, 1, data.byteLength - 1);
@@ -283,7 +283,7 @@ class BCI2K_DataConnection {
         break;
 
       case 4:
-        let supplement = new DataView(data, 1, 2).getUint8(0);
+		let supplement = new DataView(data, 1, 2).getUint8(0);
         switch (supplement) {
           case 1:
             let genericSignalView = new DataView(data, 2, data.byteLength - 2);
@@ -425,12 +425,13 @@ class BCI2K_DataConnection {
 
   private _decodeGenericSignal(data: DataView) {
     let index = 0;
-    let signalType = data.getUint8(index);
+	let signalType = data.getUint8(index);
     index = index + 1;
-    let nChannels = data.getUint16(index, true)
-    index = index + signalType
-    let nElements = data.getUint16(index, true)
-    index = data.byteOffset + index + signalType;
+	let nChannels = data.getUint16(index, true)
+	index = index + 2
+	let nElements = data.getUint16(index, true)
+	index = index + 2
+	index = index + data.byteOffset
     let signalData = new DataView(data.buffer, index)
     let signal = [];
     for (let ch = 0; ch < nChannels; ++ch) {
@@ -471,7 +472,7 @@ class BCI2K_DataConnection {
     // Bits must be populated in increasing significance
     let index = 1;
     let _stateVectorLength = new DataView(dv.buffer, index, 2)
-    index = index + 3;
+    index = index + 2;
     let stateVectorLength = parseInt(this.getNullTermString(_stateVectorLength));
     let _numVectors = new DataView(dv.buffer, index, 2)
     index = index + 3;
