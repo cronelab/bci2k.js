@@ -1,13 +1,11 @@
 {
-    "compilerOptions": {
-        "outDir": "./dist",
-        "target": "es6",
-        "sourceMap": true,
-        "types": ["node", "websocket"],
-        "declaration": true
-        // "strict": true
-    },
-    "include": [
-        "./bci2k.ts"
-    ]
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es6",
+    "sourceMap": true,
+    "types": ["node", "websocket"],
+    "declaration": true
+    // "strict": true
+  },
+  "include": ["./bci2k.ts"]
 }
