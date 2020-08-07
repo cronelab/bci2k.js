@@ -179,74 +179,75 @@ class BCI2K_OperatorConnection {
   async getTaskName() {
     return await this.execute("Get Parameter DataFile");
   }
-
+  //See https://www.bci2000.org/mediawiki/index.php/Technical_Reference:Parameter_Definition
   async getParameters() {
     let parameters: any = await this.execute("List Parameters");
     let allData = parameters.split("\n");
     let data = {};
+    let el;
+    allData.forEach(line => {
+      let descriptors = line.split("=")[0]
+      let dataType = descriptors.split(" ")[1]
+      let name = descriptors.split(" ")[2]
+      let names = descriptors.split(" ")[0].split(":");
+      names.forEach((x, i) =>{
+        switch(i){
+          case 0: {
+            if(data[names[0]]==undefined){
+              data[names[0]] = {}
+            }
+            el = data[names[0]]
+            break;
+          }
+          case 1: {
+            if(data[names[0]][names[1]]==undefined){
+            data[names[0]][names[1]] ={}
+            }
+            el = data[names[0]][names[1]]
+            break;
+          }
+          case 2: {
+            if(data[names[0]][names[1]][names[2]]==undefined){
+            data[names[0]][names[1]][names[2]] ={}
+            }
+            el = data[names[0]][names[1]][names[2]]
+            break;
+          }
+            default: {}
+          }
+      })
 
-    let entryCountHolder = [];
-    allData.forEach((line, i) => {
-      let entry = line.split("=")[0].split(":");
-      let firstEntry = entry[0];
-      entryCountHolder.push(1);
-      data[firstEntry] = {};
-    });
-    allData.forEach((line, i) => {
-      let entry = line.split("=")[0].split(":");
-      let firstEntry = entry[0];
-      let secondEntry = entry[1];
-      if (secondEntry.split(" ").length < 2) {
-        entryCountHolder[i] = 2;
-        data[firstEntry][secondEntry] = {};
-      } else {
-        data[firstEntry][secondEntry.split(" ")[0]] = {};
-      }
-    });
-    allData.forEach((line, i) => {
-      let entry = line.split("=")[0].split(":");
-      let firstEntry = entry[0];
-      let secondEntry = entry[1];
-      let thirdEntry = entry[2];
-      if (thirdEntry != undefined) {
-        if (secondEntry.split(" ").length < 2) {
-          entryCountHolder[i] = 3;
-          data[firstEntry][secondEntry][thirdEntry.split(" ")[0]] = {};
-        } else {
-          data[firstEntry][secondEntry.split(" ")[0]][
-            thirdEntry.split(" ")[0]
-          ] = {};
-        }
-      }
-    });
-    allData.forEach((line, i) => {
-      let entry = line.split("=")[0].split(":");
-      let firstEntry = entry[0];
-      let secondEntry = entry[1];
-      let thirdEntry = entry[2];
-
-      let fourthEntry = line.split("=")[0].split(" ")[
-        line.split("=")[0].split(" ").length - 1
-      ];
-      if (entryCountHolder[i] == 1) {
-        data[firstEntry][secondEntry.split(" ")[0]][fourthEntry] = {};
-      } else {
-        if (thirdEntry != undefined) {
-          if (secondEntry.split(" ").length < 2) {
-            data[firstEntry][secondEntry][thirdEntry.split(" ")[0]][
-              fourthEntry
-            ] = {};
-          } else {
-            data[firstEntry][secondEntry.split(" ")[0]][
-              thirdEntry.split(" ")[0]
-            ][fourthEntry] = {};
+      if(dataType != "matrix"){
+        if(line.split("=")[1].split("//")[0].trim().split(" ").length == 4){
+          el[name] = {
+            dataType,
+            value: {
+              value: line.split("=")[1].split("//")[0].trim().split(" ")[0],
+              defaultValue: line.split("=")[1].split("//")[0].trim().split(" ")[1],
+              low:line.split("=")[1].split("//")[0].trim().split(" ")[2],
+              high:line.split("=")[1].split("//")[0].trim().split(" ")[3],
+            },
+            comment: line.split("=")[1].split("//")[1]
           }
         }
+        else{
+          el[name] = {
+            dataType,
+            value: line.split("=")[1].split("//")[0].trim(),
+            comment: line.split("=")[1].split("//")[1]
+        }
       }
-      let NfirstEntry = line.split("=")[1].split(":");
-      // let NlastEntry = NfirstEntry[2].split(' ');
-      // console.log(NfirstEntry);
+      }
+      else{
+        el[name] = {
+          dataType,
+          value: line.split("=")[1].split("//")[0].trim(),
+          comment: line.split("=")[1].split("//")[1]
+        }  
+      }
+
     });
+
     return data
   }
 }
