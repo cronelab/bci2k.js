@@ -24,6 +24,7 @@ declare class BCI2K_OperatorConnection {
     stateListen(): void;
     getSubjectName(): Promise<unknown>;
     getTaskName(): Promise<unknown>;
+    getParameters(): Promise<{}>;
 }
 declare class BCI2K_DataConnection {
     _socket: WebSocket;

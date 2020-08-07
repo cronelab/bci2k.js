@@ -4,7 +4,7 @@ let bci = new BCI2K.bciOperator();
 const bciSourceData = new BCI2K.bciData();
 const bciFilterData = new BCI2K.bciData();
 
-bci.connect("ws://127.0.0.1").then(() => {
+bci.connect("ws://127.0.0.1:80").then(() => {
   console.log("Connected to Operator layer through NodeJS server");
 
   bciSourceData.connect("ws://127.0.0.1:20100").then(y => {

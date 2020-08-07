@@ -1,6 +1,6 @@
 {
   "name": "bci2k",
-  "version": "2.2.4",
+  "version": "2.3.0",
   "description": "A javascript connector for BCI2000",
   "main": "dist/index.js",
   "scripts": {
@@ -27,18 +27,18 @@
   },
   "homepage": "https://github.com/cronelab/bci2k.js#readme",
   "devDependencies": {
-    "@babel/core": "^7.10.3",
-    "@babel/preset-env": "^7.10.3",
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
     "babel-loader": "^8.1.0",
-    "webpack": "^4.43.0",
+    "cross-env": "^7.0.2",
+    "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "@types/node": "^14.0.14",
-    "@types/websocket": "^1.0.0",
-    "cross-env": "^7.0.2",
-    "ts-loader": "^7.0.5",
-    "typescript": "^3.9.5",
+    "@types/node": "^14.0.27",
+    "@types/websocket": "^1.0.1",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
     "websocket": "^1.0.31"
   }
 }
