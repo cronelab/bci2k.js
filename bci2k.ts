@@ -547,15 +547,17 @@ class BCI2K_DataConnection {
     // BitLocation 0 refers to the least significant bit of a byte in the packet
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
-    let index = 1;
-    let _stateVectorLength = new DataView(dv.buffer, index, 2);
-    index = index + 3; //or 2???
-    let stateVectorLength = parseInt(
-      this.getNullTermString(_stateVectorLength)
-    );
-    let _numVectors = new DataView(dv.buffer, index, 2);
-    index = index + 3;
-    let numVectors = parseInt(this.getNullTermString(_numVectors));
+ 
+    let i8Array = new Int8Array(dv.buffer);
+    let firstZero = i8Array.indexOf(0);
+    let secondZero = i8Array.indexOf(0,firstZero+1);
+
+    let decoder = new TextDecoder();
+    let stateVectorLength = parseInt(decoder.decode(i8Array.slice(1,firstZero)))
+    let numVectors = parseInt(decoder.decode(i8Array.slice(firstZero+1, secondZero)))
+
+    let index = secondZero+1;
+
     let data = new DataView(dv.buffer, index);
     let states = {};
     for (let state in this.stateFormat) {
