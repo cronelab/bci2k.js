@@ -45,7 +45,7 @@ declare class BCI2K_DataConnection {
     address: string;
     constructor(address?: string);
     private getNullTermString;
-    connect(address?: string, callingFrom?: string): Promise<void>;
+    connect(address?: string, callingFrom?: string, reconnect?: boolean): Promise<void>;
     connected(): boolean;
     private _decodeMessage;
     private _decodePhysicalUnits;

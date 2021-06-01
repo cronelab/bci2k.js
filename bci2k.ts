@@ -20,8 +20,8 @@ class BCI2K_OperatorConnection {
   address: string;
 
   constructor(address?: string) {
-    this.ondisconnect = () => {};
-    this.onStateChange = (event: string) => {};
+    this.ondisconnect = () => { };
+    this.onStateChange = (event: string) => { };
 
     // this.websocket = null;
     this._execid = 0;
@@ -190,60 +190,60 @@ class BCI2K_OperatorConnection {
       let dataType = descriptors.split(" ")[1]
       let name = descriptors.split(" ")[2]
       let names = descriptors.split(" ")[0].split(":");
-      names.forEach((x, i) =>{
-        switch(i){
+      names.forEach((x, i) => {
+        switch (i) {
           case 0: {
-            if(data[names[0]]==undefined){
+            if (data[names[0]] == undefined) {
               data[names[0]] = {}
             }
             el = data[names[0]]
             break;
           }
           case 1: {
-            if(data[names[0]][names[1]]==undefined){
-            data[names[0]][names[1]] ={}
+            if (data[names[0]][names[1]] == undefined) {
+              data[names[0]][names[1]] = {}
             }
             el = data[names[0]][names[1]]
             break;
           }
           case 2: {
-            if(data[names[0]][names[1]][names[2]]==undefined){
-            data[names[0]][names[1]][names[2]] ={}
+            if (data[names[0]][names[1]][names[2]] == undefined) {
+              data[names[0]][names[1]][names[2]] = {}
             }
             el = data[names[0]][names[1]][names[2]]
             break;
           }
-            default: {}
-          }
+          default: { }
+        }
       })
 
-      if(dataType != "matrix"){
-        if(line.split("=")[1].split("//")[0].trim().split(" ").length == 4){
+      if (dataType != "matrix") {
+        if (line.split("=")[1].split("//")[0].trim().split(" ").length == 4) {
           el[name] = {
             dataType,
             value: {
               value: line.split("=")[1].split("//")[0].trim().split(" ")[0],
               defaultValue: line.split("=")[1].split("//")[0].trim().split(" ")[1],
-              low:line.split("=")[1].split("//")[0].trim().split(" ")[2],
-              high:line.split("=")[1].split("//")[0].trim().split(" ")[3],
+              low: line.split("=")[1].split("//")[0].trim().split(" ")[2],
+              high: line.split("=")[1].split("//")[0].trim().split(" ")[3],
             },
             comment: line.split("=")[1].split("//")[1]
           }
         }
-        else{
+        else {
           el[name] = {
             dataType,
             value: line.split("=")[1].split("//")[0].trim(),
             comment: line.split("=")[1].split("//")[1]
+          }
         }
       }
-      }
-      else{
+      else {
         el[name] = {
           dataType,
           value: line.split("=")[1].split("//")[0].trim(),
           comment: line.split("=")[1].split("//")[1]
-        }  
+        }
       }
 
     });
@@ -272,13 +272,13 @@ class BCI2K_DataConnection {
   constructor(address?: string) {
     this._socket = null;
 
-    this.onconnect = () => {};
-    this.onGenericSignal = (data: any) => {};
-    this.onStateVector = (data: any) => {};
-    this.onSignalProperties = (data: any) => {};
-    this.onStateFormat = (data: any) => {};
-    this.ondisconnect = () => {};
-    this.onReceiveBlock = () => {};
+    this.onconnect = () => { };
+    this.onGenericSignal = (data: any) => { };
+    this.onStateVector = (data: any) => { };
+    this.onSignalProperties = (data: any) => { };
+    this.onStateFormat = (data: any) => { };
+    this.ondisconnect = () => { };
+    this.onReceiveBlock = () => { };
 
     this.callingFrom = "";
 
@@ -309,7 +309,7 @@ class BCI2K_DataConnection {
     return val;
   }
 
-  connect(address?: string, callingFrom?: string) {
+  connect(address?: string, callingFrom?: string, reconnect?: boolean) {
     let connection = this;
     if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
@@ -332,7 +332,9 @@ class BCI2K_DataConnection {
         connection.ondisconnect();
         setTimeout(() => {
           console.log("Disconnected");
-          this.connect("");
+          if (reconnect != false) {
+            this.connect("");
+          }
         }, 1000);
       };
 
@@ -547,16 +549,16 @@ class BCI2K_DataConnection {
     // BitLocation 0 refers to the least significant bit of a byte in the packet
     // ByteLocation 0 refers to the first byte in the sequence.
     // Bits must be populated in increasing significance
- 
+
     let i8Array = new Int8Array(dv.buffer);
     let firstZero = i8Array.indexOf(0);
-    let secondZero = i8Array.indexOf(0,firstZero+1);
+    let secondZero = i8Array.indexOf(0, firstZero + 1);
 
     let decoder = new TextDecoder();
-    let stateVectorLength = parseInt(decoder.decode(i8Array.slice(1,firstZero)))
-    let numVectors = parseInt(decoder.decode(i8Array.slice(firstZero+1, secondZero)))
+    let stateVectorLength = parseInt(decoder.decode(i8Array.slice(1, firstZero)))
+    let numVectors = parseInt(decoder.decode(i8Array.slice(firstZero + 1, secondZero)))
 
-    let index = secondZero+1;
+    let index = secondZero + 1;
 
     let data = new DataView(dv.buffer, index);
     let states = {};
