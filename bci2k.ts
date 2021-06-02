@@ -269,6 +269,7 @@ class BCI2K_DataConnection {
   ondisconnect: any;
   onReceiveBlock: any;
   address: string;
+  reconnect: boolean;
   constructor(address?: string) {
     this._socket = null;
 
@@ -295,6 +296,7 @@ class BCI2K_DataConnection {
       INT32: 3,
     };
     this.address = address;
+    this.reconnect = true;
   }
 
   private getNullTermString(dv: DataView) {
@@ -309,7 +311,7 @@ class BCI2K_DataConnection {
     return val;
   }
 
-  connect(address?: string, callingFrom?: string, reconnect?: boolean) {
+  connect(address?: string, callingFrom?: string) {
     let connection = this;
     if (connection.address === undefined) connection.address = address;
     this.callingFrom = callingFrom;
@@ -325,6 +327,7 @@ class BCI2K_DataConnection {
 
       connection._socket.onopen = () => {
         connection.onconnect();
+        console.log("Connected");
         resolve();
       };
 
@@ -332,7 +335,8 @@ class BCI2K_DataConnection {
         connection.ondisconnect();
         setTimeout(() => {
           console.log("Disconnected");
-          if (reconnect != false) {
+          if (this.reconnect != false) {
+            console.log("Reconnecting")
             this.connect("");
           }
         }, 1000);
@@ -342,6 +346,11 @@ class BCI2K_DataConnection {
         connection._decodeMessage(event.data);
       };
     });
+  }
+
+  disconnect(): void {
+    this.reconnect = false;
+    this._socket.close(1000, "disconnect called");
   }
 
   connected(): boolean {
