@@ -4,8 +4,14 @@
     "target": "es6",
     "sourceMap": true,
     "types": ["node", "websocket"],
-    "declaration": true
+    "declaration": true,
+    "module": "UMD"
     // "strict": true
   },
-  "include": ["./bci2k.ts"]
+  "include": ["./src/index.ts"],
+  "typedocOptions": {
+    "name": "BCI2k docs",
+    "entryPoints": ["./src/index.ts"],
+    "out": "docs"
+  }
 }
