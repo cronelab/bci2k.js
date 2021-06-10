@@ -1,8 +1,8 @@
 {
   "name": "bci2k",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.1",
   "description": "A javascript connector for BCI2000",
-  "main": "dist/index.js",
+  "main": "dist/bci2k.js",
   "module": "src/index.ts",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",

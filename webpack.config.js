@@ -7,18 +7,17 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js',
-    publicPath: path.resolve(__dirname, 'dist'),
-    library: 'BCI2K',
+    filename: 'bci2k.js',
+    library: 'bci2k',
     libraryTarget: 'umd',
     globalObject: 'this',
   },
   mode: devMode ? 'development' : 'production',
   devtool: devMode ? 'inline-source-map' : 'source-map',
-  externals: ['websocket'],
   resolve: {
     extensions: ['.ts', '.js'],
   },
+
   module: {
     rules: [
       {
