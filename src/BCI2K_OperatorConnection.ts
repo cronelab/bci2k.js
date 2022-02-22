@@ -5,7 +5,7 @@
 //
 // ======================================================================== //
 
-import { w3cwebsocket as WebSocket } from 'websocket';
+import { w3cwebsocket as WebSocket } from "websocket";
 
 export class BCI2K_OperatorConnection {
   msgID: number;
@@ -23,27 +23,27 @@ export class BCI2K_OperatorConnection {
     this.websocket = null;
     this.state = "";
     this.address = address || undefined;
-    this.latestIncomingData = ""
+    this.latestIncomingData = "";
     this.msgID = 0;
-    this.newData = () => {}
-    this.responseBuffer = []
+    this.newData = () => {};
+    this.responseBuffer = [];
   }
-  
+
   public connect(address?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.address === undefined) {
         this.address =
-          address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
+          address || "ws://127.0.0.1:80" || `ws://${window.location.host}`;
       }
 
       this.websocket = new WebSocket(this.address);
 
-      this.websocket.onerror = (error) => reject(`Error connecting to BCI2000 at ${this.address}`);
+      this.websocket.onerror = (error) =>
+        reject(`Error connecting to BCI2000 at ${this.address}`);
 
-      
       this.websocket.onclose = () => {
-        console.log("Connection closed")
-        this.ondisconnect()
+        console.log("Connection closed");
+        this.ondisconnect();
       };
       this.websocket.onopen = () => resolve();
 
@@ -51,8 +51,8 @@ export class BCI2K_OperatorConnection {
         let { opcode, id, response } = JSON.parse(event.data);
         switch (opcode) {
           case "O":
-            this.responseBuffer.push({id: id, response: response});
-            this.newData(response)
+            this.responseBuffer.push({ id: id, response: response });
+            this.newData(response);
             break;
           default:
             break;
@@ -61,7 +61,7 @@ export class BCI2K_OperatorConnection {
     });
   }
 
-  public disconnect(): void{
+  public disconnect(): void {
     this.websocket.close();
   }
 
@@ -74,7 +74,7 @@ export class BCI2K_OperatorConnection {
   public execute(instruction: string): Promise<string> {
     if (this.connected()) {
       return new Promise((resolve, reject) => {
-        this.msgID = this.msgID+1;
+        this.msgID = this.msgID + 1;
         this.websocket.send(
           JSON.stringify({
             opcode: "E",
@@ -82,7 +82,7 @@ export class BCI2K_OperatorConnection {
             contents: instruction,
           })
         );
-        this.newData = data => resolve(data)
+        this.newData = (data) => resolve(data);
       });
     }
     // Cannot execute if not connected
@@ -92,62 +92,61 @@ export class BCI2K_OperatorConnection {
   }
 
   async getVersion(): Promise<string> {
-    let resp = await this.execute("Version")
-    return resp.split('\r')[0]
+    let resp = await this.execute("Version");
+    return resp.split("\r")[0];
   }
 
   async showWindow(): Promise<void> {
     await this.execute("Show Window");
   }
 
-  async hideWindow():Promise<void> {
+  async hideWindow(): Promise<void> {
     await this.execute("Hide Window");
   }
 
-  async startExecutable(executable: string): Promise<void>{
-    await this.execute(`Start executable ${executable}`)
+  async startExecutable(executable: string): Promise<void> {
+    await this.execute(`Start executable ${executable}`);
   }
 
-  async startDummyRun(): Promise<void>{
+  async startDummyRun(): Promise<void> {
     // await this.execute('Startup system');
-    await this.startExecutable('SignalGenerator')
-    await this.startExecutable('DummySignalProcessing')
-    await this.startExecutable('DummyApplication')
+    await this.startExecutable("SignalGenerator");
+    await this.startExecutable("DummySignalProcessing");
+    await this.startExecutable("DummyApplication");
     // await this.execute("Set Config");
     // await this.execute("Start");
-
   }
 
   async setWatch(state: string, ip: string, port: string): Promise<void> {
     await this.execute("Add watch " + state + " at " + ip + ":" + port);
   }
 
-  async resetSystem():Promise<void> {
+  async resetSystem(): Promise<void> {
     await this.execute("Reset System");
   }
 
-  async setConfig():Promise<void> {
+  async setConfig(): Promise<void> {
     await this.execute("Set Config");
   }
 
-  async start():Promise<void> {
+  async start(): Promise<void> {
     await this.execute("Start");
   }
 
-  async stop():Promise<void> {
+  async stop(): Promise<void> {
     await this.execute("Stop");
   }
 
-  async kill():Promise<void> {
+  async kill(): Promise<void> {
     await this.execute("Exit");
   }
 
   stateListen(): void {
     setInterval(async () => {
-      let state: string = await this.execute("GET SYSTEM STATE")
-        if (state.trim() != this.state) {
-          this.onStateChange(state.trim());
-        }
+      let state: string = await this.execute("GET SYSTEM STATE");
+      if (state.trim() != this.state) {
+        this.onStateChange(state.trim());
+      }
     }, 1000);
   }
 
@@ -160,11 +159,11 @@ export class BCI2K_OperatorConnection {
   }
 
   async setParameter(parameter): Promise<void> {
-    await this.execute(`Set paramater ${parameter}`)
+    await this.execute(`Set paramater ${parameter}`);
   }
 
   async setState(state): Promise<void> {
-    await this.execute(`Set state ${state}`)
+    await this.execute(`Set state ${state}`);
   }
 
   //See https://www.bci2000.org/mediawiki/index.php/Technical_Reference:Parameter_Definition
@@ -173,69 +172,71 @@ export class BCI2K_OperatorConnection {
     let allData = parameters.split("\n");
     let data = {};
     let el;
-    allData.forEach(line => {
-      let descriptors = line.split("=")[0]
-      let dataType = descriptors.split(" ")[1]
-      let name = descriptors.split(" ")[2]
+    allData.forEach((line) => {
+      let descriptors = line.split("=")[0];
+      let dataType = descriptors.split(" ")[1];
+      let name = descriptors.split(" ")[2];
       let names = descriptors.split(" ")[0].split(":");
-      names.forEach((x, i) =>{
-        switch(i){
+      names.forEach((x, i) => {
+        switch (i) {
           case 0: {
-            if(data[names[0]]==undefined){
-              data[names[0]] = {}
+            if (data[names[0]] == undefined) {
+              data[names[0]] = {};
             }
-            el = data[names[0]]
+            el = data[names[0]];
             break;
           }
           case 1: {
-            if(data[names[0]][names[1]]==undefined){
-            data[names[0]][names[1]] ={}
+            if (data[names[0]][names[1]] == undefined) {
+              data[names[0]][names[1]] = {};
             }
-            el = data[names[0]][names[1]]
+            el = data[names[0]][names[1]];
             break;
           }
           case 2: {
-            if(data[names[0]][names[1]][names[2]]==undefined){
-            data[names[0]][names[1]][names[2]] ={}
+            if (data[names[0]][names[1]][names[2]] == undefined) {
+              data[names[0]][names[1]][names[2]] = {};
             }
-            el = data[names[0]][names[1]][names[2]]
+            el = data[names[0]][names[1]][names[2]];
             break;
           }
-            default: {}
+          default: {
           }
-      })
+        }
+      });
 
-      if(dataType != "matrix"){
-        if(line.split("=")[1].split("//")[0].trim().split(" ").length == 4){
+      if (dataType != "matrix") {
+        if (line.split("=")[1].split("//")[0].trim().split(" ").length == 4) {
           el[name] = {
             dataType,
             value: {
               value: line.split("=")[1].split("//")[0].trim().split(" ")[0],
-              defaultValue: line.split("=")[1].split("//")[0].trim().split(" ")[1],
-              low:line.split("=")[1].split("//")[0].trim().split(" ")[2],
-              high:line.split("=")[1].split("//")[0].trim().split(" ")[3],
+              defaultValue: line
+                .split("=")[1]
+                .split("//")[0]
+                .trim()
+                .split(" ")[1],
+              low: line.split("=")[1].split("//")[0].trim().split(" ")[2],
+              high: line.split("=")[1].split("//")[0].trim().split(" ")[3],
             },
-            comment: line.split("=")[1].split("//")[1]
-          }
-        }
-        else{
+            comment: line.split("=")[1].split("//")[1],
+          };
+        } else {
           el[name] = {
             dataType,
             value: line.split("=")[1].split("//")[0].trim(),
-            comment: line.split("=")[1].split("//")[1]
+            comment: line.split("=")[1].split("//")[1],
+          };
         }
-      }
-      }
-      else{
+      } else {
         el[name] = {
           dataType,
           value: line.split("=")[1].split("//")[0].trim(),
-          comment: line.split("=")[1].split("//")[1]
-        }  
+          comment: line.split("=")[1].split("//")[1],
+        };
       }
-
     });
 
-    return data
+    return data;
   }
 }

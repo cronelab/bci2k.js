@@ -33,7 +33,7 @@ class BCI2K_OperatorConnection {
         return new Promise((resolve, reject) => {
             if (this.address === undefined) {
                 this.address =
-                    address || "ws://127.0.0.1:80" || `ws://{window.location.host}`;
+                    address || "ws://127.0.0.1:80" || `ws://${window.location.host}`;
             }
             this.websocket = new websocket_1.w3cwebsocket(this.address);
             this.websocket.onerror = (error) => reject(`Error connecting to BCI2000 at ${this.address}`);
@@ -70,7 +70,7 @@ class BCI2K_OperatorConnection {
                     id: this.msgID,
                     contents: instruction,
                 }));
-                this.newData = data => resolve(data);
+                this.newData = (data) => resolve(data);
             });
         }
         // Cannot execute if not connected
@@ -79,7 +79,7 @@ class BCI2K_OperatorConnection {
     getVersion() {
         return __awaiter(this, void 0, void 0, function* () {
             let resp = yield this.execute("Version");
-            return resp.split('\r')[0];
+            return resp.split("\r")[0];
         });
     }
     showWindow() {
@@ -100,9 +100,9 @@ class BCI2K_OperatorConnection {
     startDummyRun() {
         return __awaiter(this, void 0, void 0, function* () {
             // await this.execute('Startup system');
-            yield this.startExecutable('SignalGenerator');
-            yield this.startExecutable('DummySignalProcessing');
-            yield this.startExecutable('DummyApplication');
+            yield this.startExecutable("SignalGenerator");
+            yield this.startExecutable("DummySignalProcessing");
+            yield this.startExecutable("DummyApplication");
             // await this.execute("Set Config");
             // await this.execute("Start");
         });
@@ -172,7 +172,7 @@ class BCI2K_OperatorConnection {
             let allData = parameters.split("\n");
             let data = {};
             let el;
-            allData.forEach(line => {
+            allData.forEach((line) => {
                 let descriptors = line.split("=")[0];
                 let dataType = descriptors.split(" ")[1];
                 let name = descriptors.split(" ")[2];
@@ -200,7 +200,8 @@ class BCI2K_OperatorConnection {
                             el = data[names[0]][names[1]][names[2]];
                             break;
                         }
-                        default: { }
+                        default: {
+                        }
                     }
                 });
                 if (dataType != "matrix") {
@@ -209,18 +210,22 @@ class BCI2K_OperatorConnection {
                             dataType,
                             value: {
                                 value: line.split("=")[1].split("//")[0].trim().split(" ")[0],
-                                defaultValue: line.split("=")[1].split("//")[0].trim().split(" ")[1],
+                                defaultValue: line
+                                    .split("=")[1]
+                                    .split("//")[0]
+                                    .trim()
+                                    .split(" ")[1],
                                 low: line.split("=")[1].split("//")[0].trim().split(" ")[2],
                                 high: line.split("=")[1].split("//")[0].trim().split(" ")[3],
                             },
-                            comment: line.split("=")[1].split("//")[1]
+                            comment: line.split("=")[1].split("//")[1],
                         };
                     }
                     else {
                         el[name] = {
                             dataType,
                             value: line.split("=")[1].split("//")[0].trim(),
-                            comment: line.split("=")[1].split("//")[1]
+                            comment: line.split("=")[1].split("//")[1],
                         };
                     }
                 }
@@ -228,7 +233,7 @@ class BCI2K_OperatorConnection {
                     el[name] = {
                         dataType,
                         value: line.split("=")[1].split("//")[0].trim(),
-                        comment: line.split("=")[1].split("//")[1]
+                        comment: line.split("=")[1].split("//")[1],
                     };
                 }
             });

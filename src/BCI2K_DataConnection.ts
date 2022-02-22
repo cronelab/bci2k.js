@@ -1,4 +1,4 @@
-import { w3cwebsocket as WebSocket } from 'websocket';
+import { w3cwebsocket as WebSocket } from "websocket";
 
 export class BCI2K_DataConnection {
   _socket: any;
@@ -74,7 +74,7 @@ export class BCI2K_DataConnection {
           this.connect("");
         }, 1000);
       };
-      connection._socket.onmessage = (event: { data: ArrayBuffer; }) => {
+      connection._socket.onmessage = (event: { data: ArrayBuffer }) => {
         connection._decodeMessage(event.data);
       };
     });
@@ -259,11 +259,15 @@ export class BCI2K_DataConnection {
     // Bits must be populated in increasing significance
     let i8Array = new Int8Array(dv.buffer);
     let firstZero = i8Array.indexOf(0);
-    let secondZero = i8Array.indexOf(0,firstZero+1);
+    let secondZero = i8Array.indexOf(0, firstZero + 1);
     let decoder = new TextDecoder();
-    let stateVectorLength = parseInt(decoder.decode(i8Array.slice(1,firstZero)))
-    let numVectors = parseInt(decoder.decode(i8Array.slice(firstZero+1, secondZero)))
-    let index = secondZero+1;
+    let stateVectorLength = parseInt(
+      decoder.decode(i8Array.slice(1, firstZero))
+    );
+    let numVectors = parseInt(
+      decoder.decode(i8Array.slice(firstZero + 1, secondZero))
+    );
+    let index = secondZero + 1;
     let data = new DataView(dv.buffer, index);
     let states = {};
     for (let state in this.stateFormat) {
