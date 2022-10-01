@@ -3,6 +3,7 @@
       "module": "commonjs",
       "target": "es2015",
       "declaration": true,
+      "declarationMap": true,
       "outDir": "./dist",
       "sourceMap": true,
       "skipLibCheck": true

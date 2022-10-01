@@ -31,3 +31,4 @@ export declare class BCI2K_OperatorConnection {
     setState(state: any): Promise<void>;
     getParameters(): Promise<any>;
 }
+//# sourceMappingURL=BCI2K_OperatorConnection.d.ts.map

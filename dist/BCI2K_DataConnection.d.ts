@@ -26,3 +26,4 @@ export declare class BCI2K_DataConnection {
     private _decodeGenericSignal;
     private _decodeStateVector;
 }
+//# sourceMappingURL=BCI2K_DataConnection.d.ts.map

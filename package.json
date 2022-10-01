@@ -1,12 +1,16 @@
 {
   "name": "bci2k",
-  "version": "3.0.0",
-  "description": "",
+  "version": "3.0.1",
+  "description": "A javascript connector for BCI2000",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cronelab/bci2k.js.git"
+  },
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
