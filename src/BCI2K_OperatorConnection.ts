@@ -48,11 +48,11 @@ export class BCI2K_OperatorConnection {
       this.websocket.onopen = () => resolve();
 
       this.websocket.onmessage = (event) => {
-        let { opcode, id, response } = JSON.parse(event.data);
+        let { opcode, id, contents } = JSON.parse(event.data);
         switch (opcode) {
           case "O":
-            this.responseBuffer.push({ id: id, response: response });
-            this.newData(response);
+            this.responseBuffer.push({ id: id, response: contents });
+            this.newData(contents);
             break;
           default:
             break;

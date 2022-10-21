@@ -43,11 +43,11 @@ class BCI2K_OperatorConnection {
             };
             this.websocket.onopen = () => resolve();
             this.websocket.onmessage = (event) => {
-                let { opcode, id, response } = JSON.parse(event.data);
+                let { opcode, id, contents } = JSON.parse(event.data);
                 switch (opcode) {
                     case "O":
-                        this.responseBuffer.push({ id: id, response: response });
-                        this.newData(response);
+                        this.responseBuffer.push({ id: id, response: contents });
+                        this.newData(contents);
                         break;
                     default:
                         break;
@@ -142,6 +142,14 @@ class BCI2K_OperatorConnection {
             let state = yield this.execute("GET SYSTEM STATE");
             if (state.trim() != this.state) {
                 this.onStateChange(state.trim());
+                // state = state.trim();
+                // if (state === this.state){
+                //   return
+                // }
+                // else{
+                //   this.state = state;
+                //   this.onStateChange(state);
+                //   console.log(this.state);
             }
         }), 1000);
     }
