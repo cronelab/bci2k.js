@@ -1,4 +1,5 @@
-import { w3cwebsocket as WebSocket } from "websocket";
+import W3CWebSocket  from 'websocket';
+const WebSocket = W3CWebSocket.w3cwebsocket;
 
 export class BCI2K_DataConnection {
   _socket: any;
@@ -308,3 +309,4 @@ export class BCI2K_DataConnection {
     this.states = states;
   }
 }
+export default BCI2K_DataConnection;

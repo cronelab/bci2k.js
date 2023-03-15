@@ -3,10 +3,8 @@
       "module": "commonjs",
       "target": "es2015",
       "declaration": true,
-      "declarationMap": true,
+      "emitDeclarationOnly": true,
       "outDir": "./dist",
-      "sourceMap": true,
-      "skipLibCheck": true
     },
     "include": [
       "src/**/*"

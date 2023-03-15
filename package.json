@@ -1,26 +1,35 @@
 {
   "name": "bci2k",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "A javascript connector for BCI2000",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "author": "",
+  "license": "ISC",
+  "main":"./dist/bci2k.umd.js",
+  "module":"./dist/bci2k.es.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "/dist"
+    "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/bci2k.es.js",
+      "require": "./dist/bci2k.umd.js"
+    }
+  },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/cronelab/bci2k.js.git"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "vite build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "websocket": "^1.0.34"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4"
   }
 }

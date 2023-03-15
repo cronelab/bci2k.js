@@ -5,7 +5,8 @@
 //
 // ======================================================================== //
 
-import { w3cwebsocket as WebSocket } from "websocket";
+import W3CWebSocket  from 'websocket';
+const WebSocket = W3CWebSocket.w3cwebsocket;
 
 export class BCI2K_OperatorConnection {
   msgID: number;
@@ -240,3 +241,4 @@ export class BCI2K_OperatorConnection {
     return data;
   }
 }
+export default BCI2K_OperatorConnection;
