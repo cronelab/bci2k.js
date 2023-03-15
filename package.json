@@ -1,6 +1,6 @@
 {
   "name": "bci2k",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "A javascript connector for BCI2000",
   "author": "",
   "license": "ISC",
