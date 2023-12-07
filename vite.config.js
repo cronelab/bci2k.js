@@ -8,14 +8,14 @@ export default defineConfig({
             name: 'bci2k',
             fileName: (format) => `bci2k.${format}.js`
         },
-        // rollupOptions: {
-        //     external: ['websocket'],
-        //     output: {
-        //         globals: {
-        //             websocket: 'websocket'
-        //         },
+        rollupOptions: {
+            external: ['websocket'],
+            output: {
+                globals: {
+                    websocket: 'websocket'
+                },
 
-        //     },
-        // },
+            },
+        },
     },
 })

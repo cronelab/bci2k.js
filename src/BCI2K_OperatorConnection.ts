@@ -10,14 +10,13 @@ const WebSocket = W3CWebSocket.w3cwebsocket;
 
 export class BCI2K_OperatorConnection {
   msgID: number;
-  websocket: any;
+  websocket: WebSocket;
   state: any;
   ondisconnect: any;
   onStateChange: any;
   address: string;
   latestIncomingData: string;
   newData: any;
-  responseBuffer: any;
   constructor(address?: string) {
     this.ondisconnect = () => {};
     this.onStateChange = (event: string) => {};
@@ -27,7 +26,6 @@ export class BCI2K_OperatorConnection {
     this.latestIncomingData = "";
     this.msgID = 0;
     this.newData = () => {};
-    this.responseBuffer = [];
   }
 
   public connect(address?: string): Promise<void> {
@@ -39,25 +37,18 @@ export class BCI2K_OperatorConnection {
 
       this.websocket = new WebSocket(this.address);
 
+
       this.websocket.onerror = (error) =>
         reject(`Error connecting to BCI2000 at ${this.address}`);
 
       this.websocket.onclose = () => {
-        console.log("Connection closed");
         this.ondisconnect();
       };
       this.websocket.onopen = () => resolve();
 
-      this.websocket.onmessage = (event) => {
-        let { opcode, id, contents } = JSON.parse(event.data);
-        switch (opcode) {
-          case "O":
-            this.responseBuffer.push({ id: id, response: contents });
-            this.newData(contents);
-            break;
-          default:
-            break;
-        }
+      this.websocket.onmessage = ({data}) => {
+        // console.log(data);
+        this.newData(data);
       };
     });
   }
@@ -75,15 +66,14 @@ export class BCI2K_OperatorConnection {
   public execute(instruction: string): Promise<string> {
     if (this.connected()) {
       return new Promise((resolve, reject) => {
-        this.msgID = this.msgID + 1;
-        this.websocket.send(
-          JSON.stringify({
-            opcode: "E",
-            id: this.msgID,
-            contents: instruction,
-          })
-        );
-        this.newData = (data) => resolve(data);
+        this.websocket.send(instruction);
+        this.newData = (data: string) => {
+          console.log(data.includes('Error: '))
+          if(data.includes('Error: ')) reject(data)
+          else{
+        resolve(data)
+        }
+        };
       });
     }
     // Cannot execute if not connected

@@ -1,13 +1,12 @@
 export declare class BCI2K_OperatorConnection {
     msgID: number;
-    websocket: any;
+    websocket: WebSocket;
     state: any;
     ondisconnect: any;
     onStateChange: any;
     address: string;
     latestIncomingData: string;
     newData: any;
-    responseBuffer: any;
     constructor(address?: string);
     connect(address?: string): Promise<void>;
     disconnect(): void;

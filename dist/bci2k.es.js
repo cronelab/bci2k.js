@@ -1,141 +1,18 @@
-var k, v;
-function F() {
-  if (v)
-    return k;
-  v = 1;
-  var h = function() {
-    if (typeof self == "object" && self)
-      return self;
-    if (typeof window == "object" && window)
-      return window;
-    throw new Error("Unable to resolve global `this`");
-  };
-  return k = function() {
-    if (this)
-      return this;
-    if (typeof globalThis == "object" && globalThis)
-      return globalThis;
-    try {
-      Object.defineProperty(Object.prototype, "__global__", {
-        get: function() {
-          return this;
-        },
-        configurable: !0
-      });
-    } catch {
-      return h();
-    }
-    try {
-      return __global__ || h();
-    } finally {
-      delete Object.prototype.__global__;
-    }
-  }(), k;
-}
-const V = "websocket", O = "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.", D = [
-  "websocket",
-  "websockets",
-  "socket",
-  "networking",
-  "comet",
-  "push",
-  "RFC-6455",
-  "realtime",
-  "server",
-  "client"
-], C = "Brian McKelvey <theturtle32@gmail.com> (https://github.com/theturtle32)", N = [
-  "Iñaki Baz Castillo <ibc@aliax.net> (http://dev.sipdoc.net)"
-], E = "1.0.34", L = {
-  type: "git",
-  url: "https://github.com/theturtle32/WebSocket-Node.git"
-}, j = "https://github.com/theturtle32/WebSocket-Node", W = {
-  node: ">=4.0.0"
-}, U = {
-  bufferutil: "^4.0.1",
-  debug: "^2.2.0",
-  "es5-ext": "^0.10.50",
-  "typedarray-to-buffer": "^3.1.5",
-  "utf-8-validate": "^5.0.2",
-  yaeti: "^0.0.6"
-}, A = {
-  "buffer-equal": "^1.0.0",
-  gulp: "^4.0.2",
-  "gulp-jshint": "^2.0.4",
-  "jshint-stylish": "^2.2.1",
-  jshint: "^2.0.0",
-  tape: "^4.9.1"
-}, G = {
-  verbose: !1
-}, B = {
-  test: "tape test/unit/*.js",
-  gulp: "gulp"
-}, $ = "index", R = {
-  lib: "./lib"
-}, M = "lib/browser.js", q = "Apache-2.0", K = {
-  name: V,
-  description: O,
-  keywords: D,
-  author: C,
-  contributors: N,
-  version: E,
-  repository: L,
-  homepage: j,
-  engines: W,
-  dependencies: U,
-  devDependencies: A,
-  config: G,
-  scripts: B,
-  main: $,
-  directories: R,
-  browser: M,
-  license: q
-};
-var z = K.version, g;
-if (typeof globalThis == "object")
-  g = globalThis;
-else
-  try {
-    g = F();
-  } catch {
-  } finally {
-    if (!g && typeof window < "u" && (g = window), !g)
-      throw new Error("Could not determine global this");
-  }
-var m = g.WebSocket || g.MozWebSocket, J = z;
-function P(h, s) {
-  var t;
-  return s ? t = new m(h, s) : t = new m(h), t;
-}
-m && ["CONNECTING", "OPEN", "CLOSING", "CLOSED"].forEach(function(h) {
-  Object.defineProperty(P, h, {
-    get: function() {
-      return m[h];
-    }
-  });
-});
-var I = {
-  w3cwebsocket: m ? P : null,
-  version: J
-};
-const _ = I.w3cwebsocket;
-class Z {
-  constructor(s) {
+import y from "websocket";
+const b = y.w3cwebsocket;
+class V {
+  constructor(a) {
     this.ondisconnect = () => {
-    }, this.onStateChange = (t) => {
-    }, this.websocket = null, this.state = "", this.address = s || void 0, this.latestIncomingData = "", this.msgID = 0, this.newData = () => {
-    }, this.responseBuffer = [];
+    }, this.onStateChange = (s) => {
+    }, this.websocket = null, this.state = "", this.address = a || void 0, this.latestIncomingData = "", this.msgID = 0, this.newData = () => {
+    };
   }
-  connect(s) {
-    return new Promise((t, i) => {
-      this.address === void 0 && (this.address = s || "ws://127.0.0.1:80"), this.websocket = new _(this.address), this.websocket.onerror = (n) => i(`Error connecting to BCI2000 at ${this.address}`), this.websocket.onclose = () => {
-        console.log("Connection closed"), this.ondisconnect();
-      }, this.websocket.onopen = () => t(), this.websocket.onmessage = (n) => {
-        let { opcode: e, id: r, contents: a } = JSON.parse(n.data);
-        switch (e) {
-          case "O":
-            this.responseBuffer.push({ id: r, response: a }), this.newData(a);
-            break;
-        }
+  connect(a) {
+    return new Promise((s, e) => {
+      this.address === void 0 && (this.address = a || "ws://127.0.0.1:80"), this.websocket = new b(this.address), this.websocket.onerror = (i) => e(`Error connecting to BCI2000 at ${this.address}`), this.websocket.onclose = () => {
+        this.ondisconnect();
+      }, this.websocket.onopen = () => s(), this.websocket.onmessage = ({ data: i }) => {
+        this.newData(i);
       };
     });
   }
@@ -143,17 +20,13 @@ class Z {
     this.websocket.close();
   }
   connected() {
-    return this.websocket !== null && this.websocket.readyState === _.OPEN;
+    return this.websocket !== null && this.websocket.readyState === b.OPEN;
   }
-  execute(s) {
-    return this.connected() ? new Promise((t, i) => {
-      this.msgID = this.msgID + 1, this.websocket.send(
-        JSON.stringify({
-          opcode: "E",
-          id: this.msgID,
-          contents: s
-        })
-      ), this.newData = (n) => t(n);
+  execute(a) {
+    return this.connected() ? new Promise((s, e) => {
+      this.websocket.send(a), this.newData = (i) => {
+        console.log(i.includes("Error: ")), i.includes("Error: ") ? e(i) : s(i);
+      };
     }) : Promise.reject(
       "Cannot execute instruction: not connected to BCI2000"
     );
@@ -167,14 +40,14 @@ class Z {
   async hideWindow() {
     await this.execute("Hide Window");
   }
-  async startExecutable(s) {
-    await this.execute(`Start executable ${s}`);
+  async startExecutable(a) {
+    await this.execute(`Start executable ${a}`);
   }
   async startDummyRun() {
     await this.startExecutable("SignalGenerator"), await this.startExecutable("DummySignalProcessing"), await this.startExecutable("DummyApplication");
   }
-  async setWatch(s, t, i) {
-    await this.execute("Add watch " + s + " at " + t + ":" + i);
+  async setWatch(a, s, e) {
+    await this.execute("Add watch " + a + " at " + s + ":" + e);
   }
   async resetSystem() {
     await this.execute("Reset System");
@@ -193,8 +66,8 @@ class Z {
   }
   stateListen() {
     setInterval(async () => {
-      let s = await this.execute("GET SYSTEM STATE");
-      s.trim() != this.state && this.onStateChange(s.trim());
+      let a = await this.execute("GET SYSTEM STATE");
+      a.trim() != this.state && this.onStateChange(a.trim());
     }, 1e3);
   }
   async getSubjectName() {
@@ -203,62 +76,62 @@ class Z {
   async getTaskName() {
     return await this.execute("Get Parameter DataFile");
   }
-  async setParameter(s) {
-    await this.execute(`Set paramater ${s}`);
+  async setParameter(a) {
+    await this.execute(`Set paramater ${a}`);
   }
-  async setState(s) {
-    await this.execute(`Set state ${s}`);
+  async setState(a) {
+    await this.execute(`Set state ${a}`);
   }
   //See https://www.bci2000.org/mediawiki/index.php/Technical_Reference:Parameter_Definition
   async getParameters() {
-    let t = (await this.execute("List Parameters")).split(`
-`), i = {}, n;
-    return t.forEach((e) => {
-      let r = e.split("=")[0], a = r.split(" ")[1], l = r.split(" ")[2], o = r.split(" ")[0].split(":");
-      o.forEach((b, u) => {
-        switch (u) {
+    let s = (await this.execute("List Parameters")).split(`
+`), e = {}, i;
+    return s.forEach((t) => {
+      let r = t.split("=")[0], n = r.split(" ")[1], l = r.split(" ")[2], o = r.split(" ")[0].split(":");
+      o.forEach((d, h) => {
+        switch (h) {
           case 0: {
-            i[o[0]] == null && (i[o[0]] = {}), n = i[o[0]];
+            e[o[0]] == null && (e[o[0]] = {}), i = e[o[0]];
             break;
           }
           case 1: {
-            i[o[0]][o[1]] == null && (i[o[0]][o[1]] = {}), n = i[o[0]][o[1]];
+            e[o[0]][o[1]] == null && (e[o[0]][o[1]] = {}), i = e[o[0]][o[1]];
             break;
           }
           case 2: {
-            i[o[0]][o[1]][o[2]] == null && (i[o[0]][o[1]][o[2]] = {}), n = i[o[0]][o[1]][o[2]];
+            e[o[0]][o[1]][o[2]] == null && (e[o[0]][o[1]][o[2]] = {}), i = e[o[0]][o[1]][o[2]];
             break;
           }
         }
-      }), a != "matrix" ? e.split("=")[1].split("//")[0].trim().split(" ").length == 4 ? n[l] = {
-        dataType: a,
+      }), n != "matrix" ? t.split("=")[1].split("//")[0].trim().split(" ").length == 4 ? i[l] = {
+        dataType: n,
         value: {
-          value: e.split("=")[1].split("//")[0].trim().split(" ")[0],
-          defaultValue: e.split("=")[1].split("//")[0].trim().split(" ")[1],
-          low: e.split("=")[1].split("//")[0].trim().split(" ")[2],
-          high: e.split("=")[1].split("//")[0].trim().split(" ")[3]
+          value: t.split("=")[1].split("//")[0].trim().split(" ")[0],
+          defaultValue: t.split("=")[1].split("//")[0].trim().split(" ")[1],
+          low: t.split("=")[1].split("//")[0].trim().split(" ")[2],
+          high: t.split("=")[1].split("//")[0].trim().split(" ")[3]
         },
-        comment: e.split("=")[1].split("//")[1]
-      } : n[l] = {
-        dataType: a,
-        value: e.split("=")[1].split("//")[0].trim(),
-        comment: e.split("=")[1].split("//")[1]
-      } : n[l] = {
-        dataType: a,
-        value: e.split("=")[1].split("//")[0].trim(),
-        comment: e.split("=")[1].split("//")[1]
+        comment: t.split("=")[1].split("//")[1]
+      } : i[l] = {
+        dataType: n,
+        value: t.split("=")[1].split("//")[0].trim(),
+        comment: t.split("=")[1].split("//")[1]
+      } : i[l] = {
+        dataType: n,
+        value: t.split("=")[1].split("//")[0].trim(),
+        comment: t.split("=")[1].split("//")[1]
       };
-    }), i;
+    }), e;
   }
 }
-const x = I.w3cwebsocket;
-class H {
-  constructor(s) {
+const S = y.w3cwebsocket;
+class F {
+  constructor(a) {
     this._socket = null, this.onconnect = () => {
-    }, this.onGenericSignal = (t) => {
-    }, this.onStateVector = (t) => {
-    }, this.onSignalProperties = (t) => {
-    }, this.onStateFormat = (t) => {
+    }, this.onGenericSignal = (s) => {
+    }, this.onStateVector = (s) => {
+    }, this.onSignalProperties = (s) => {
+    }, this.onStateFormat = (s) => {
     }, this.ondisconnect = () => {
     }, this.onReceiveBlock = () => {
     }, this.callingFrom = "", this.states = {}, this.signal = null, this.signalProperties = null, this.stateFormat = null, this.stateVecOrder = null, this.SignalType = {
@@ -266,200 +139,200 @@ class H {
       FLOAT24: 1,
       FLOAT32: 2,
       INT32: 3
-    }, this.address = s;
+    }, this.address = a;
   }
-  getNullTermString(s) {
-    var t = "";
-    let i = 0;
-    for (; i < s.byteLength; ) {
-      var n = s.getUint8(i);
-      if (i++, n == 0)
+  getNullTermString(a) {
+    var s = "";
+    let e = 0;
+    for (; e < a.byteLength; ) {
+      var i = a.getUint8(e);
+      if (e++, i == 0)
         break;
-      t += String.fromCharCode(n);
+      s += String.fromCharCode(i);
     }
-    return t;
+    return s;
   }
-  connect(s, t) {
-    let i = this;
-    return i.address === void 0 && (i.address = s), this.callingFrom = t, new Promise((n, e) => {
-      i._socket = new x(i.address), i._socket.binaryType = "arraybuffer", i._socket.onerror = () => {
-        e("Error connecting to data source at " + i.address);
-      }, i._socket.onopen = () => {
-        i.onconnect(), n();
-      }, i._socket.onclose = () => {
-        i.ondisconnect(), setTimeout(() => {
+  connect(a, s) {
+    let e = this;
+    return e.address === void 0 && (e.address = a), this.callingFrom = s, new Promise((i, t) => {
+      e._socket = new S(e.address), e._socket.binaryType = "arraybuffer", e._socket.onerror = () => {
+        t("Error connecting to data source at " + e.address);
+      }, e._socket.onopen = () => {
+        e.onconnect(), i();
+      }, e._socket.onclose = () => {
+        e.ondisconnect(), setTimeout(() => {
           console.log("Disconnected"), this.connect("");
         }, 1e3);
-      }, i._socket.onmessage = (r) => {
-        i._decodeMessage(r.data);
+      }, e._socket.onmessage = (r) => {
+        e._decodeMessage(r.data);
       };
     });
   }
   connected() {
-    return this._socket != null && this._socket.readyState === x.OPEN;
+    return this._socket != null && this._socket.readyState === S.OPEN;
   }
-  _decodeMessage(s) {
-    let t = new DataView(s, 0, 1).getUint8(0);
-    switch (t) {
+  _decodeMessage(a) {
+    let s = new DataView(a, 0, 1).getUint8(0);
+    switch (s) {
       case 3:
-        let i = new DataView(s, 1, s.byteLength - 1);
-        this._decodeStateFormat(i);
+        let e = new DataView(a, 1, a.byteLength - 1);
+        this._decodeStateFormat(e);
         break;
       case 4:
-        let n = new DataView(s, 1, 2).getUint8(0);
-        switch (n) {
+        let i = new DataView(a, 1, 2).getUint8(0);
+        switch (i) {
           case 1:
-            let r = new DataView(s, 2, s.byteLength - 2);
+            let r = new DataView(a, 2, a.byteLength - 2);
             this._decodeGenericSignal(r);
             break;
           case 3:
-            let a = new DataView(s, 2, s.byteLength - 2);
-            this._decodeSignalProperties(a);
+            let n = new DataView(a, 2, a.byteLength - 2);
+            this._decodeSignalProperties(n);
             break;
           default:
-            console.error("Unsupported Supplement: " + n.toString());
+            console.error("Unsupported Supplement: " + i.toString());
             break;
         }
         this.onReceiveBlock();
         break;
       case 5:
-        let e = new DataView(s, 1, s.byteLength - 1);
-        this._decodeStateVector(e);
+        let t = new DataView(a, 1, a.byteLength - 1);
+        this._decodeStateVector(t);
         break;
       default:
-        console.error("Unsupported Descriptor: " + t.toString());
+        console.error("Unsupported Descriptor: " + s.toString());
         break;
     }
   }
-  _decodePhysicalUnits(s) {
-    let t;
-    t = {};
-    let i = s.split(" "), n = 0;
-    return t.offset = Number(i[n++]), t.gain = Number(i[n++]), t.symbol = i[n++], t.vmin = Number(i[n++]), t.vmax = Number(i[n++]), t;
+  _decodePhysicalUnits(a) {
+    let s;
+    s = {};
+    let e = a.split(" "), i = 0;
+    return s.offset = Number(e[i++]), s.gain = Number(e[i++]), s.symbol = e[i++], s.vmin = Number(e[i++]), s.vmax = Number(e[i++]), s;
   }
-  _decodeSignalProperties(s) {
-    let t = this.getNullTermString(s);
-    t = t.replace(/{/g, " { "), t = t.replace(/}/g, " } "), this.signalProperties = {};
-    let i = t.split(" "), n = [];
-    for (let r = 0; r < i.length; r++)
-      i[r].trim() !== "" && n.push(i[r]);
-    let e = 0;
-    if (this.signalProperties.name = n[e++], this.signalProperties.channels = [], n[e] === "{") {
-      for (; n[++e] !== "}"; )
-        this.signalProperties.channels.push(n[e]);
-      e++;
+  _decodeSignalProperties(a) {
+    let s = this.getNullTermString(a);
+    s = s.replace(/{/g, " { "), s = s.replace(/}/g, " } "), this.signalProperties = {};
+    let e = s.split(" "), i = [];
+    for (let r = 0; r < e.length; r++)
+      e[r].trim() !== "" && i.push(e[r]);
+    let t = 0;
+    if (this.signalProperties.name = i[t++], this.signalProperties.channels = [], i[t] === "{") {
+      for (; i[++t] !== "}"; )
+        this.signalProperties.channels.push(i[t]);
+      t++;
     } else {
-      let r = parseInt(n[e++]);
-      for (let a = 0; a < r; a++)
-        this.signalProperties.channels.push((a + 1).toString());
+      let r = parseInt(i[t++]);
+      for (let n = 0; n < r; n++)
+        this.signalProperties.channels.push((n + 1).toString());
     }
-    if (this.signalProperties.elements = [], n[e] === "{") {
-      for (; n[++e] !== "}"; )
-        this.signalProperties.elements.push(n[e]);
-      e++;
+    if (this.signalProperties.elements = [], i[t] === "{") {
+      for (; i[++t] !== "}"; )
+        this.signalProperties.elements.push(i[t]);
+      t++;
     } else {
-      let r = parseInt(n[e++]);
-      for (let a = 0; a < r; a++)
-        this.signalProperties.elements.push((a + 1).toString());
+      let r = parseInt(i[t++]);
+      for (let n = 0; n < r; n++)
+        this.signalProperties.elements.push((n + 1).toString());
     }
-    this.signalProperties.numelements = this.signalProperties.elements.length, this.signalProperties.signaltype = n[e++], this.signalProperties.channelunit = this._decodePhysicalUnits(
-      n.slice(e, e += 5).join(" ")
+    this.signalProperties.numelements = this.signalProperties.elements.length, this.signalProperties.signaltype = i[t++], this.signalProperties.channelunit = this._decodePhysicalUnits(
+      i.slice(t, t += 5).join(" ")
     ), this.signalProperties.elementunit = this._decodePhysicalUnits(
-      n.slice(e, e += 5).join(" ")
-    ), e++, this.signalProperties.valueunits = [];
+      i.slice(t, t += 5).join(" ")
+    ), t++, this.signalProperties.valueunits = [];
     for (let r = 0; r < this.signalProperties.channels.length; r++)
       this.signalProperties.valueunits.push(
-        this._decodePhysicalUnits(n.slice(e, e += 5).join(" "))
+        this._decodePhysicalUnits(i.slice(t, t += 5).join(" "))
       );
-    e++, this.onSignalProperties(this.signalProperties);
+    t++, this.onSignalProperties(this.signalProperties);
   }
-  _decodeStateFormat(s) {
+  _decodeStateFormat(a) {
     this.stateFormat = {};
-    let i = this.getNullTermString(s).split(`
+    let e = this.getNullTermString(a).split(`
 `);
-    for (let e = 0; e < i.length; e++) {
-      if (i[e].trim().length === 0)
+    for (let t = 0; t < e.length; t++) {
+      if (e[t].trim().length === 0)
         continue;
-      let r = i[e].split(" "), a = r[0];
-      this.stateFormat[a] = {}, this.stateFormat[a].bitWidth = parseInt(r[1]), this.stateFormat[a].defaultValue = parseInt(r[2]), this.stateFormat[a].byteLocation = parseInt(r[3]), this.stateFormat[a].bitLocation = parseInt(r[4]);
+      let r = e[t].split(" "), n = r[0];
+      this.stateFormat[n] = {}, this.stateFormat[n].bitWidth = parseInt(r[1]), this.stateFormat[n].defaultValue = parseInt(r[2]), this.stateFormat[n].byteLocation = parseInt(r[3]), this.stateFormat[n].bitLocation = parseInt(r[4]);
     }
-    let n = [];
-    for (let e in this.stateFormat) {
-      let r = this.stateFormat[e].byteLocation * 8;
-      r += this.stateFormat[e].bitLocation, n.push([e, r]);
+    let i = [];
+    for (let t in this.stateFormat) {
+      let r = this.stateFormat[t].byteLocation * 8;
+      r += this.stateFormat[t].bitLocation, i.push([t, r]);
     }
-    n.sort((e, r) => e[1] < r[1] ? -1 : e[1] > r[1] ? 1 : 0), this.stateVecOrder = [];
-    for (let e = 0; e < n.length; e++) {
-      let r = n[e][0];
+    i.sort((t, r) => t[1] < r[1] ? -1 : t[1] > r[1] ? 1 : 0), this.stateVecOrder = [];
+    for (let t = 0; t < i.length; t++) {
+      let r = i[t][0];
       this.stateVecOrder.push([r, this.stateFormat[r].bitWidth]);
     }
     this.onStateFormat(this.stateFormat);
   }
-  _decodeGenericSignal(s) {
-    let t = 0, i = s.getUint8(t);
-    t = t + 1;
-    let n = s.getUint16(t, !0);
-    t = t + 2;
-    let e = s.getUint16(t, !0);
-    t = t + 2, t = t + s.byteOffset;
-    let r = new DataView(s.buffer, t), a = [];
-    for (let l = 0; l < n; ++l) {
-      a.push([]);
-      for (let o = 0; o < e; ++o)
-        switch (i) {
+  _decodeGenericSignal(a) {
+    let s = 0, e = a.getUint8(s);
+    s = s + 1;
+    let i = a.getUint16(s, !0);
+    s = s + 2;
+    let t = a.getUint16(s, !0);
+    s = s + 2, s = s + a.byteOffset;
+    let r = new DataView(a.buffer, s), n = [];
+    for (let l = 0; l < i; ++l) {
+      n.push([]);
+      for (let o = 0; o < t; ++o)
+        switch (e) {
           case this.SignalType.INT16:
-            a[l].push(
-              r.getInt16((e * l + o) * 2, !0)
+            n[l].push(
+              r.getInt16((t * l + o) * 2, !0)
             );
             break;
           case this.SignalType.FLOAT32:
-            a[l].push(
-              r.getFloat32((e * l + o) * 4, !0)
+            n[l].push(
+              r.getFloat32((t * l + o) * 4, !0)
             );
             break;
           case this.SignalType.INT32:
-            a[l].push(
-              r.getInt32((e * l + o) * 4, !0)
+            n[l].push(
+              r.getInt32((t * l + o) * 4, !0)
             );
             break;
           case this.SignalType.FLOAT24:
-            a[l].push(0);
+            n[l].push(0);
             break;
         }
     }
-    this.signal = a, this.onGenericSignal(a);
+    this.signal = n, this.onGenericSignal(n);
   }
-  _decodeStateVector(s) {
+  _decodeStateVector(a) {
     if (this.stateVecOrder == null)
       return;
-    let t = new Int8Array(s.buffer), i = t.indexOf(0), n = t.indexOf(0, i + 1), e = new TextDecoder(), r = parseInt(
-      e.decode(t.slice(1, i))
-    ), a = parseInt(
-      e.decode(t.slice(i + 1, n))
-    ), l = n + 1, o = new DataView(s.buffer, l), b = {};
-    for (let u in this.stateFormat)
-      b[u] = Array(a).fill(
-        this.stateFormat[u].defaultValue
+    let s = new Int8Array(a.buffer), e = s.indexOf(0), i = s.indexOf(0, e + 1), t = new TextDecoder(), r = parseInt(
+      t.decode(s.slice(1, e))
+    ), n = parseInt(
+      t.decode(s.slice(e + 1, i))
+    ), l = i + 1, o = new DataView(a.buffer, l), d = {};
+    for (let h in this.stateFormat)
+      d[h] = Array(n).fill(
+        this.stateFormat[h].defaultValue
       );
-    for (let u = 0; u < a; u++) {
+    for (let h = 0; h < n; h++) {
       let p = new Uint8Array(
         o.buffer,
-        o.byteOffset + u * r,
+        o.byteOffset + h * r,
         r
-      ), d = [];
+      ), u = [];
       for (let c = 0; c < p.length; c++)
-        d.push(p[c] & 1 ? 1 : 0), d.push(p[c] & 2 ? 1 : 0), d.push(p[c] & 4 ? 1 : 0), d.push(p[c] & 8 ? 1 : 0), d.push(p[c] & 16 ? 1 : 0), d.push(p[c] & 32 ? 1 : 0), d.push(p[c] & 64 ? 1 : 0), d.push(p[c] & 128 ? 1 : 0);
+        u.push(p[c] & 1 ? 1 : 0), u.push(p[c] & 2 ? 1 : 0), u.push(p[c] & 4 ? 1 : 0), u.push(p[c] & 8 ? 1 : 0), u.push(p[c] & 16 ? 1 : 0), u.push(p[c] & 32 ? 1 : 0), u.push(p[c] & 64 ? 1 : 0), u.push(p[c] & 128 ? 1 : 0);
       for (let c = 0; c < this.stateVecOrder.length; c++) {
-        let f = this.stateFormat[this.stateVecOrder[c][0]], T = f.byteLocation * 8 + f.bitLocation, w = 0, y = 1;
-        for (let S = 0; S < f.bitWidth; S++)
-          d[T + S] && (w = (w | y) >>> 0), y = y << 1 >>> 0;
-        b[this.stateVecOrder[c][0]][u] = w;
+        let m = this.stateFormat[this.stateVecOrder[c][0]], x = m.byteLocation * 8 + m.bitLocation, g = 0, w = 1;
+        for (let f = 0; f < m.bitWidth; f++)
+          u[x + f] && (g = (g | w) >>> 0), w = w << 1 >>> 0;
+        d[this.stateVecOrder[c][0]][h] = g;
       }
     }
-    this.onStateVector(b), this.states = b;
+    this.onStateVector(d), this.states = d;
   }
 }
 export {
-  H as BCI2K_DataConnection,
-  Z as BCI2K_OperatorConnection
+  F as BCI2K_DataConnection,
+  V as BCI2K_OperatorConnection
 };
