@@ -4,8 +4,8 @@
   "description": "A javascript connector for BCI2000",
   "author": "",
   "license": "ISC",
-  "main":"./dist/bci2k.umd.js",
-  "module":"./dist/bci2k.es.js",
+  "main": "./dist/bci2k.umd.js",
+  "module": "./dist/bci2k.es.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -23,13 +23,21 @@
   },
   "scripts": {
     "build": "vite build && tsc",
+    "lint": "eslint --ext .ts src",
+    "format": "prettier --w ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "websocket": "^1.0.34"
   },
   "devDependencies": {
-    "typescript": "^4.9.5",
-    "vite": "^4.1.4"
-  }
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.7"
+  },
+  "packageManager": "yarn@4.0.2"
 }
