@@ -5,21 +5,21 @@
 //
 // ======================================================================== //
 
-import W3CWebSocket  from 'websocket';
+import W3CWebSocket from "websocket";
 const WebSocket = W3CWebSocket.w3cwebsocket;
 
 export class BCI2K_OperatorConnection {
   msgID: number;
   websocket: WebSocket;
-  state: any;
-  ondisconnect: any;
-  onStateChange: any;
+  state: string;
+  ondisconnect: () => void;
+  onStateChange: (state: string) => void;
   address: string;
   latestIncomingData: string;
-  newData: any;
+  newData: (data: string) => void;
   constructor(address?: string) {
     this.ondisconnect = () => {};
-    this.onStateChange = (event: string) => {};
+    this.onStateChange = () => {};
     this.websocket = null;
     this.state = "";
     this.address = address || undefined;
@@ -29,26 +29,25 @@ export class BCI2K_OperatorConnection {
   }
 
   public connect(address?: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (this.address === undefined) {
         this.address =
           address || "ws://127.0.0.1:80" || `ws://${window.location.host}`;
       }
-
       this.websocket = new WebSocket(this.address);
 
-
-      this.websocket.onerror = (error) =>
+      this.websocket.onerror = () => {
         reject(`Error connecting to BCI2000 at ${this.address}`);
-
+      };
       this.websocket.onclose = () => {
         this.ondisconnect();
       };
-      this.websocket.onopen = () => resolve();
+      this.websocket.onopen = () => {
+        resolve();
+      };
 
-      this.websocket.onmessage = ({data}) => {
-        // console.log(data);
-        this.newData(data);
+      this.websocket.onmessage = ({ data }) => {
+        if (!data.includes("BCI2000 Version")) this.newData(data);
       };
     });
   }
@@ -68,11 +67,10 @@ export class BCI2K_OperatorConnection {
       return new Promise((resolve, reject) => {
         this.websocket.send(instruction);
         this.newData = (data: string) => {
-          console.log(data.includes('Error: '))
-          if(data.includes('Error: ')) reject(data)
-          else{
-        resolve(data)
-        }
+          if (data.includes("Error: ")) reject(data);
+          else {
+            resolve(data);
+          }
         };
       });
     }
@@ -83,7 +81,7 @@ export class BCI2K_OperatorConnection {
   }
 
   async getVersion(): Promise<string> {
-    let resp = await this.execute("Version");
+    const resp = await this.execute("Version");
     return resp.split("\r")[0];
   }
 
@@ -100,12 +98,12 @@ export class BCI2K_OperatorConnection {
   }
 
   async startDummyRun(): Promise<void> {
-    // await this.execute('Startup system');
+    await this.execute("Startup system");
     await this.startExecutable("SignalGenerator");
     await this.startExecutable("DummySignalProcessing");
     await this.startExecutable("DummyApplication");
-    // await this.execute("Set Config");
-    // await this.execute("Start");
+    await this.execute("Set Config");
+    await this.execute("Start");
   }
 
   async setWatch(state: string, ip: string, port: string): Promise<void> {
@@ -134,7 +132,7 @@ export class BCI2K_OperatorConnection {
 
   stateListen(): void {
     setInterval(async () => {
-      let state: string = await this.execute("GET SYSTEM STATE");
+      const state: string = await this.execute("GET SYSTEM STATE");
       if (state.trim() != this.state) {
         this.onStateChange(state.trim());
       }
@@ -158,16 +156,16 @@ export class BCI2K_OperatorConnection {
   }
 
   //See https://www.bci2000.org/mediawiki/index.php/Technical_Reference:Parameter_Definition
-  async getParameters(): Promise<any> {
-    let parameters: any = await this.execute("List Parameters");
-    let allData = parameters.split("\n");
-    let data = {};
+  async getParameters(): Promise<unknown> {
+    const parameters = await this.execute("List Parameters");
+    const allData = parameters.split("\n");
+    const data = {};
     let el;
     allData.forEach((line) => {
-      let descriptors = line.split("=")[0];
-      let dataType = descriptors.split(" ")[1];
-      let name = descriptors.split(" ")[2];
-      let names = descriptors.split(" ")[0].split(":");
+      const descriptors = line.split("=")[0];
+      const dataType = descriptors.split(" ")[1];
+      const name = descriptors.split(" ")[2];
+      const names = descriptors.split(" ")[0].split(":");
       names.forEach((x, i) => {
         switch (i) {
           case 0: {
@@ -192,38 +190,37 @@ export class BCI2K_OperatorConnection {
             break;
           }
           default: {
+            break;
           }
         }
       });
-
+      const segmentTwo = line.split("=")[1]?.split("//") ?? [""];
+      const segmentOne = segmentTwo[0]?.trim();
+      const segmentThree = segmentOne.split(" ");
       if (dataType != "matrix") {
-        if (line.split("=")[1].split("//")[0].trim().split(" ").length == 4) {
+        if (segmentOne?.split(" ").length == 4) {
           el[name] = {
             dataType,
             value: {
-              value: line.split("=")[1].split("//")[0].trim().split(" ")[0],
-              defaultValue: line
-                .split("=")[1]
-                .split("//")[0]
-                .trim()
-                .split(" ")[1],
-              low: line.split("=")[1].split("//")[0].trim().split(" ")[2],
-              high: line.split("=")[1].split("//")[0].trim().split(" ")[3],
+              value: segmentThree[0],
+              defaultValue: segmentThree[1],
+              low: segmentThree[2],
+              high: segmentThree[3],
             },
-            comment: line.split("=")[1].split("//")[1],
+            comment: segmentTwo[1],
           };
         } else {
           el[name] = {
             dataType,
-            value: line.split("=")[1].split("//")[0].trim(),
-            comment: line.split("=")[1].split("//")[1],
+            value: segmentOne,
+            comment: segmentTwo[1],
           };
         }
       } else {
         el[name] = {
           dataType,
-          value: line.split("=")[1].split("//")[0].trim(),
-          comment: line.split("=")[1].split("//")[1],
+          value: segmentOne,
+          comment: segmentTwo[1],
         };
       }
     });

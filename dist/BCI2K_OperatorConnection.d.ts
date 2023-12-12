@@ -1,12 +1,12 @@
 export declare class BCI2K_OperatorConnection {
     msgID: number;
     websocket: WebSocket;
-    state: any;
-    ondisconnect: any;
-    onStateChange: any;
+    state: string;
+    ondisconnect: () => void;
+    onStateChange: (state: string) => void;
     address: string;
     latestIncomingData: string;
-    newData: any;
+    newData: (data: string) => void;
     constructor(address?: string);
     connect(address?: string): Promise<void>;
     disconnect(): void;
@@ -28,6 +28,6 @@ export declare class BCI2K_OperatorConnection {
     getTaskName(): Promise<string>;
     setParameter(parameter: any): Promise<void>;
     setState(state: any): Promise<void>;
-    getParameters(): Promise<any>;
+    getParameters(): Promise<unknown>;
 }
 export default BCI2K_OperatorConnection;
