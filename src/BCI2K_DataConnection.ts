@@ -129,7 +129,6 @@ export class BCI2K_DataConnection {
       }
       case 4: {
         const supplement = new DataView(data, 1, 2).getUint8(0);
-        console.log(supplement);
         switch (supplement) {
           case 1: {
             const genericSignalView = new DataView(
