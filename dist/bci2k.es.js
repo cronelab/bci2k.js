@@ -1,6 +1,8 @@
 import k from "websocket";
 const S = k.w3cwebsocket;
 class V {
+  // udpSocket: any;
+  // onSystemStateChange: (x: string) => string;
   constructor(e) {
     this.ondisconnect = () => {
     }, this.onStateChange = () => {
@@ -20,6 +22,19 @@ class V {
       };
     });
   }
+  // public async connectUDP(port?: number) {
+  //   return new Promise<string>(async (resolve, reject) => {
+  //     const udpServer = dgram.createSocket("udp4");
+  //     udpServer.bind(port, () => resolve("UDP server running"));
+  //     udpServer.on("message", (x) => {
+  //       const systemState = `${x}`.split("\r")[0].split("\t")[1];
+  //       this.onSystemStateChange(systemState);
+  //     });
+  //     udpServer.on("error", (err) => {
+  //       reject(err);
+  //     });
+  //   });
+  // }
   disconnect() {
     this.websocket.close();
   }
@@ -188,7 +203,7 @@ class F {
       }
       case 4: {
         const s = new DataView(e, 1, 2).getUint8(0);
-        switch (console.log(s), s) {
+        switch (s) {
           case 1: {
             const t = new DataView(
               e,

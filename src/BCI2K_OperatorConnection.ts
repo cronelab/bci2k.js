@@ -6,6 +6,7 @@
 // ======================================================================== //
 
 import W3CWebSocket from "websocket";
+// import * as dgram from "dgram";
 const WebSocket = W3CWebSocket.w3cwebsocket;
 
 export class BCI2K_OperatorConnection {
@@ -17,6 +18,8 @@ export class BCI2K_OperatorConnection {
   address: string;
   latestIncomingData: string;
   newData: (data: string) => void;
+  // udpSocket: any;
+  // onSystemStateChange: (x: string) => string;
   constructor(address?: string) {
     this.ondisconnect = () => {};
     this.onStateChange = () => {};
@@ -26,6 +29,8 @@ export class BCI2K_OperatorConnection {
     this.latestIncomingData = "";
     this.msgID = 0;
     this.newData = () => {};
+    // this.udpSocket = null;
+    // this.onSystemStateChange = () => "";
   }
 
   public connect(address?: string): Promise<void> {
@@ -51,6 +56,21 @@ export class BCI2K_OperatorConnection {
       };
     });
   }
+
+  // public async connectUDP(port?: number) {
+  //   return new Promise<string>(async (resolve, reject) => {
+  //     const udpServer = dgram.createSocket("udp4");
+  //     udpServer.bind(port, () => resolve("UDP server running"));
+
+  //     udpServer.on("message", (x) => {
+  //       const systemState = `${x}`.split("\r")[0].split("\t")[1];
+  //       this.onSystemStateChange(systemState);
+  //     });
+  //     udpServer.on("error", (err) => {
+  //       reject(err);
+  //     });
+  //   });
+  // }
 
   public disconnect(): void {
     this.websocket.close();

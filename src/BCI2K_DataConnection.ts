@@ -37,6 +37,7 @@ type SignalTypes = {
   FLOAT32: number;
   INT32: number;
 };
+
 export class BCI2K_DataConnection {
   websocket: WebSocket;
   states: StateVector;
@@ -45,12 +46,12 @@ export class BCI2K_DataConnection {
   stateFormat: StateFormat;
   stateVecOrder: unknown[];
   SignalType: SignalTypes;
-  callingFrom: unknown;
+  callingFrom: string;
   onconnect: () => void;
   ondisconnect: () => void;
   onGenericSignal: (x: number[][]) => void;
-  onStateVector: (x: unknown) => void;
-  onSignalProperties: (x: unknown) => void;
+  onStateVector: (x: StateVector) => void;
+  onSignalProperties: (x: SignalProperties) => void;
   onStateFormat: (x: unknown) => void;
   onReceiveBlock: () => void;
   address: string;
@@ -134,7 +135,7 @@ export class BCI2K_DataConnection {
             const genericSignalView = new DataView(
               data,
               2,
-              data.byteLength - 2
+              data.byteLength - 2,
             );
             this._decodeGenericSignal(genericSignalView);
             break;
@@ -143,7 +144,7 @@ export class BCI2K_DataConnection {
             const signalPropertyView = new DataView(
               data,
               2,
-              data.byteLength - 2
+              data.byteLength - 2,
             );
             this._decodeSignalProperties(signalPropertyView);
             break;
@@ -224,16 +225,16 @@ export class BCI2K_DataConnection {
     this.signalProperties.numelements = this.signalProperties.elements.length;
     this.signalProperties.signaltype = props[pidx++];
     this.signalProperties.channelunit = this._decodePhysicalUnits(
-      props.slice(pidx, (pidx += 5)).join(" ")
+      props.slice(pidx, (pidx += 5)).join(" "),
     );
     this.signalProperties.elementunit = this._decodePhysicalUnits(
-      props.slice(pidx, (pidx += 5)).join(" ")
+      props.slice(pidx, (pidx += 5)).join(" "),
     );
     pidx++; // '{'
     this.signalProperties.valueunits = [];
     for (let i = 0; i < this.signalProperties.channels.length; i++)
       this.signalProperties.valueunits.push(
-        this._decodePhysicalUnits(props.slice(pidx, (pidx += 5)).join(" "))
+        this._decodePhysicalUnits(props.slice(pidx, (pidx += 5)).join(" ")),
       );
     pidx++; // '}'
     this.onSignalProperties(this.signalProperties);
@@ -290,17 +291,17 @@ export class BCI2K_DataConnection {
         switch (signalType) {
           case this.SignalType.INT16:
             signal[ch].push(
-              signalData.getInt16((nElements * ch + el) * 2, true)
+              signalData.getInt16((nElements * ch + el) * 2, true),
             );
             break;
           case this.SignalType.FLOAT32:
             signal[ch].push(
-              signalData.getFloat32((nElements * ch + el) * 4, true)
+              signalData.getFloat32((nElements * ch + el) * 4, true),
             );
             break;
           case this.SignalType.INT32:
             signal[ch].push(
-              signalData.getInt32((nElements * ch + el) * 4, true)
+              signalData.getInt32((nElements * ch + el) * 4, true),
             );
             break;
           case this.SignalType.FLOAT24:
@@ -326,24 +327,24 @@ export class BCI2K_DataConnection {
     const secondZero = i8Array.indexOf(0, firstZero + 1);
     const decoder = new TextDecoder();
     const stateVectorLength = parseInt(
-      decoder.decode(i8Array.slice(1, firstZero))
+      decoder.decode(i8Array.slice(1, firstZero)),
     );
     const numVectors = parseInt(
-      decoder.decode(i8Array.slice(firstZero + 1, secondZero))
+      decoder.decode(i8Array.slice(firstZero + 1, secondZero)),
     );
     const index = secondZero + 1;
     const data = new DataView(dv.buffer, index);
     const states = {};
     for (const state in this.stateFormat) {
       states[state] = Array(numVectors).fill(
-        this.stateFormat[state].defaultValue
+        this.stateFormat[state].defaultValue,
       );
     }
     for (let vecIdx = 0; vecIdx < numVectors; vecIdx++) {
       const vec = new Uint8Array(
         data.buffer,
         data.byteOffset + vecIdx * stateVectorLength,
-        stateVectorLength
+        stateVectorLength,
       );
       const bits = [];
       for (let byteIdx = 0; byteIdx < vec.length; byteIdx++) {

@@ -40,12 +40,12 @@ export declare class BCI2K_DataConnection {
     stateFormat: StateFormat;
     stateVecOrder: unknown[];
     SignalType: SignalTypes;
-    callingFrom: unknown;
+    callingFrom: string;
     onconnect: () => void;
     ondisconnect: () => void;
     onGenericSignal: (x: number[][]) => void;
-    onStateVector: (x: unknown) => void;
-    onSignalProperties: (x: unknown) => void;
+    onStateVector: (x: StateVector) => void;
+    onSignalProperties: (x: SignalProperties) => void;
     onStateFormat: (x: unknown) => void;
     onReceiveBlock: () => void;
     address: string;
